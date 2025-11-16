@@ -1,12 +1,14 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+
+import java.time.LocalDate;
 
 @SpringBootTest()
 class FilmControllerTests {
@@ -18,7 +20,7 @@ class FilmControllerTests {
     public void postEmptyFilmThrowsException() {
         Film newFilm = new Film();
 
-        Assertions.assertThrows(ValidationException.class, () -> {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
             filmController.create(newFilm);
         });
     }
@@ -28,10 +30,10 @@ class FilmControllerTests {
         Film newFilm = new Film();
         newFilm.setName("");
         newFilm.setDescription("Some description");
-        newFilm.setReleaseDate("2025-01-01");
+        newFilm.setReleaseDate(LocalDate.parse("2025-01-01"));
         newFilm.setDuration(120);
 
-        Assertions.assertThrows(ValidationException.class, () -> {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
             filmController.create(newFilm);
         });
     }
@@ -41,10 +43,10 @@ class FilmControllerTests {
         Film newFilm = new Film();
         newFilm.setName("Some film");
         newFilm.setDescription("Some description".repeat(200));
-        newFilm.setReleaseDate("2025-01-01");
+        newFilm.setReleaseDate(LocalDate.parse("2025-01-01"));
         newFilm.setDuration(120);
 
-        Assertions.assertThrows(ValidationException.class, () -> {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
             filmController.create(newFilm);
         });
     }
@@ -54,10 +56,10 @@ class FilmControllerTests {
         Film newFilm = new Film();
         newFilm.setName("Some film");
         newFilm.setDescription("Some description");
-        newFilm.setReleaseDate("1700-01-01");
+        newFilm.setReleaseDate(LocalDate.parse("1700-01-01"));
         newFilm.setDuration(120);
 
-        Assertions.assertThrows(ValidationException.class, () -> {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
             filmController.create(newFilm);
         });
     }
@@ -67,10 +69,10 @@ class FilmControllerTests {
         Film newFilm = new Film();
         newFilm.setName("Some film");
         newFilm.setDescription("Some description");
-        newFilm.setReleaseDate("2025-01-01");
+        newFilm.setReleaseDate(LocalDate.parse("2025-01-01"));
         newFilm.setDuration(-5);
 
-        Assertions.assertThrows(ValidationException.class, () -> {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
             filmController.create(newFilm);
         });
     }
@@ -80,7 +82,7 @@ class FilmControllerTests {
         Film newFilm = new Film();
         newFilm.setName("Some film");
         newFilm.setDescription("Some description");
-        newFilm.setReleaseDate("2025-01-01");
+        newFilm.setReleaseDate(LocalDate.parse("2025-01-01"));
         newFilm.setDuration(120);
 
         Assertions.assertDoesNotThrow(() -> {

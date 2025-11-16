@@ -1,19 +1,26 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.validators.CinemaDate;
+import java.time.LocalDate;
 
 
 @Data
 public class Film {
+    @Null(groups = Marker.OnCreate.class, message = "При добавлении нового фильма id должен быть пустым.")
+    @NotNull(groups = Marker.OnUpdate.class, message = "Необходимо указать id фильма, который требуется изменить.")
     private Long id;
-    @NotNull
-    @NotBlank
+    @NotBlank(groups = Marker.OnCreate.class, message = "Название фильма не может быть пустым.")
     private String name;
+    @Size(
+            max = 200,
+            groups = {Marker.OnCreate.class, Marker.OnUpdate.class},
+            message = "Описание не должно превышать 200 символов."
+    )
     private String description;
-    private String releaseDate;
-    @Positive
+    @CinemaDate(groups = {Marker.OnCreate.class, Marker.OnUpdate.class}, message = "Фильм не мог выйти в указанном году.")
+    private LocalDate releaseDate;
+    @Positive(groups = {Marker.OnCreate.class, Marker.OnUpdate.class}, message = "Продолжительность фильма должна быть положительным числом.")
     private Integer duration;
 }

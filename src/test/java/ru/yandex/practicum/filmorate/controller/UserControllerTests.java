@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+
+import java.time.LocalDate;
 
 @SpringBootTest()
 public class UserControllerTests {
@@ -17,7 +19,7 @@ public class UserControllerTests {
     public void postEmptyUserThrowsException() {
         User newUser = new User();
 
-        Assertions.assertThrows(ValidationException.class, () -> {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
             userController.create(newUser);
         });
     }
@@ -28,10 +30,10 @@ public class UserControllerTests {
         newUser.setEmail("");
         newUser.setLogin("someLogin");
         newUser.setName("someName");
-        newUser.setBirthday("2000-01-01");
+        newUser.setBirthday(LocalDate.parse("2000-01-01"));
 
 
-        Assertions.assertThrows(ValidationException.class, () -> {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
             userController.create(newUser);
         });
     }
@@ -42,10 +44,10 @@ public class UserControllerTests {
         newUser.setEmail("badEmail");
         newUser.setLogin("someLogin");
         newUser.setName("someName");
-        newUser.setBirthday("2000-01-01");
+        newUser.setBirthday(LocalDate.parse("2000-01-01"));
 
 
-        Assertions.assertThrows(ValidationException.class, () -> {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
             userController.create(newUser);
         });
     }
@@ -56,10 +58,10 @@ public class UserControllerTests {
         newUser.setEmail("some@email");
         newUser.setLogin("");
         newUser.setName("someName");
-        newUser.setBirthday("2000-01-01");
+        newUser.setBirthday(LocalDate.parse("2000-01-01"));
 
 
-        Assertions.assertThrows(ValidationException.class, () -> {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
             userController.create(newUser);
         });
     }
@@ -70,10 +72,10 @@ public class UserControllerTests {
         newUser.setEmail("some@email");
         newUser.setLogin("some login");
         newUser.setName("someName");
-        newUser.setBirthday("2000-01-01");
+        newUser.setBirthday(LocalDate.parse("2000-01-01"));
 
 
-        Assertions.assertThrows(ValidationException.class, () -> {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
             userController.create(newUser);
         });
     }
@@ -84,7 +86,8 @@ public class UserControllerTests {
         newUser.setEmail("some@email");
         newUser.setLogin("someLogin");
         newUser.setName("");
-        newUser.setBirthday("2000-01-01");
+        newUser.setBirthday(LocalDate.parse("2000-01-01"));
+        System.out.println("ID=" + newUser.getId());
 
 
         Assertions.assertDoesNotThrow(() -> {
@@ -98,10 +101,10 @@ public class UserControllerTests {
         newUser.setEmail("some@email");
         newUser.setLogin("someLogin");
         newUser.setName("someName");
-        newUser.setBirthday("2100-01-01");
+        newUser.setBirthday(LocalDate.parse("2100-01-01"));
 
 
-        Assertions.assertThrows(ValidationException.class, () -> {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
             userController.create(newUser);
         });
     }
