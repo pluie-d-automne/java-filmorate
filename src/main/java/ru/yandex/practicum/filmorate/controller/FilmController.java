@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -17,23 +16,20 @@ import java.util.Collection;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private final InMemoryFilmStorage inMemoryFilmStorage;
     private final FilmService filmService;
 
-    @Autowired
     public FilmController(InMemoryFilmStorage inMemoryFilmStorage,  FilmService filmService) {
-        this.inMemoryFilmStorage = inMemoryFilmStorage;
         this.filmService = filmService;
     }
 
     @GetMapping
     public Collection<Film> getAllFilms() {
-        return inMemoryFilmStorage.getAllFilms();
+        return filmService.getAllFilms();
     }
 
     @GetMapping("/{filmId}")
     public Film getFilmById(@PathVariable long filmId) {
-        return inMemoryFilmStorage.getFilmById(filmId);
+        return filmService.getFilmById(filmId);
     }
 
     @GetMapping("/popular")
@@ -44,13 +40,13 @@ public class FilmController {
     @PostMapping
     @Validated({Marker.OnCreate.class})
     public Film create(@Valid @RequestBody Film newFilm) {
-        return inMemoryFilmStorage.create(newFilm);
+        return filmService.create(newFilm);
     }
 
     @PutMapping
     @Validated({Marker.OnUpdate.class})
     public Film update(@Valid @RequestBody Film newFilm) {
-        return inMemoryFilmStorage.update(newFilm);
+        return filmService.update(newFilm);
     }
 
     @PutMapping("/{filmId}/like/{userId}")

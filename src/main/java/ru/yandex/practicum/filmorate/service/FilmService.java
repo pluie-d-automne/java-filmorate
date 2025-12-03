@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -13,12 +12,27 @@ import java.util.*;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-    Comparator<Film> filmLikesComparator = Comparator.comparing(Film::getLikesCnt).reversed();
+    private final Comparator<Film> filmLikesComparator = Comparator.comparing(Film::getLikesCnt).reversed();
 
-    @Autowired
     public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+    }
+
+    public Collection<Film> getAllFilms() {
+        return filmStorage.getAllFilms();
+    }
+
+    public Film getFilmById(long filmId) {
+        return filmStorage.getFilmById(filmId);
+    }
+
+    public Film create(Film newFilm) {
+        return filmStorage.create(newFilm);
+    }
+
+    public Film update(Film newFilm) {
+        return filmStorage.update(newFilm);
     }
 
     public void like(Long filmId, Long userId) {
