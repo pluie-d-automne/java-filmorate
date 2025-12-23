@@ -25,6 +25,8 @@ public class Film {
     @Positive(groups = {Marker.OnCreate.class, Marker.OnUpdate.class}, message = "Продолжительность фильма должна быть положительным числом.")
     private Integer duration;
     private Set<Long> likes;
+    private Set<Genre> genres;
+    private Rating rating;
 
     public int getLikesCnt() {
         if (likes == null) {
