@@ -11,10 +11,7 @@ import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -30,8 +27,6 @@ public class FilmRowMapper implements RowMapper<Film> {
         film.setDuration(resultSet.getInt("duration"));
         Array array = resultSet.getArray("genres");
         if (array != null) {
-//            Object[] oArray = (Object[]) array.getArray();
-//            List<Object> list = Arrays.asList(oArray);
             Object[] oArray = (Object[]) array.getArray();
 
             for (Object o : oArray) {
@@ -45,9 +40,10 @@ public class FilmRowMapper implements RowMapper<Film> {
         }
         film.setLikesCnt(resultSet.getInt("likes_cnt"));
         Integer mpaId = resultSet.getInt("rating_id");
+        String mpaName = resultSet.getString("mpa_name");
         Mpa mpa = new Mpa();
         mpa.setId(mpaId);
-        //Mpa mpa = new Mpa(mpaId);
+        mpa.setName(mpaName);
         film.setMpa(mpa);
         return film;
     }

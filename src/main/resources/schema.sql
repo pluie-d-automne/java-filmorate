@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS "users" (
   "birthday" date
 );
 
-DROP TABLE IF EXISTS  "films" CASCADE;
+DROP TABLE IF EXISTS "films" CASCADE;
 CREATE TABLE IF NOT EXISTS "films" (
   "id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   "name" varchar NOT NULL,
@@ -65,7 +65,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS unique_email ON "users" ("email");
 
 CREATE UNIQUE INDEX IF NOT EXISTS unique_login ON "users" ("login");
 
---CREATE UNIQUE INDEX IF NOT EXISTS unique_film_name ON "films" ("name", "release_dt");
+CREATE UNIQUE INDEX IF NOT EXISTS unique_film_name ON "films" ("name", "release_dt");
 
 CREATE UNIQUE INDEX IF NOT EXISTS unique_rating ON "ratings" ("name");
 
@@ -73,6 +73,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS unique_genre ON "genres" ("name");
 
 CREATE UNIQUE INDEX IF NOT EXISTS unique_film_genre ON "film_genres" ("film_id", "genre_id");
 
+DROP VIEW IF EXISTS "films_full";
 CREATE VIEW IF NOT EXISTS "films_full" AS
 SELECT "films"."id",
        "films"."name",
@@ -80,9 +81,11 @@ SELECT "films"."id",
        "films"."release_dt",
        "films"."duration",
        "films"."rating_id",
+       "r"."name" AS "mpa_name",
        "g"."genres",
        "likes"."likes_cnt"
 FROM "films"
+LEFT JOIN "ratings" AS "r" ON "r"."id" = "films"."rating_id"
 LEFT JOIN (SELECT "film_id", ARRAY_AGG("genre_id" ORDER BY "genre_id") AS "genres"
 	FROM "film_genres"
 	GROUP BY "film_id"

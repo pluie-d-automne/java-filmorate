@@ -55,7 +55,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     @Override
     public Film create(Film film) {
-
         insert(
                 INSERT_FILM_QUERY,
                 film.getName(),
@@ -80,23 +79,29 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        update(
-                UPDATE_QUERY,
-                film.getName(),
-                film.getDescription(),
-                film.getReleaseDate(),
-                film.getDuration(),
-                film.getMpa().getId(),
-                film.getId()
-        );
-        delete(DELETE_FILM_GENRES_BY_ID, film.getId());
-
-        if (film.getGenres() != null) {
-            for (Genre genre : film.getGenres()) {
-                insert(INSERT_GENRE_LINK_QUERY, film.getId(), genre.getId());
+        Long filmId = film.getId();
+        log.trace("Request to change film with id=" + filmId);
+        Optional<Film> oldFilm = findOne(FIND_FILM_BY_ID, filmId);
+        if (oldFilm.isPresent()) {
+            update(
+                    UPDATE_QUERY,
+                    film.getName(),
+                    film.getDescription(),
+                    film.getReleaseDate(),
+                    film.getDuration(),
+                    film.getMpa().getId(),
+                    filmId
+            );
+            if (film.getGenres() != null) {
+                delete(DELETE_FILM_GENRES_BY_ID, filmId);
+                for (Genre genre : film.getGenres()) {
+                    insert(INSERT_GENRE_LINK_QUERY, filmId, genre.getId());
+                }
             }
+            return film;
+        } else {
+            throw new NotFoundException("Фильм с id=" + film.getId() + " не найден.");
         }
-        return film;
     }
 
     @Override

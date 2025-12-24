@@ -11,10 +11,6 @@ import java.sql.SQLException;
 public class MpaRowMapper implements RowMapper<Mpa> {
     @Override
     public Mpa mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-//        Mpa mpa = new Mpa(
-//                resultSet.getInt("id"),
-//                resultSet.getString("name")
-//                );
         Mpa mpa = new Mpa();
         mpa.setId(resultSet.getInt("id"));
         mpa.setName(resultSet.getString("name"));
