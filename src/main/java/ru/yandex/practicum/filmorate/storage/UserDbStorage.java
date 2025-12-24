@@ -57,15 +57,20 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
 
     @Override
     public User update(User user) {
-        update(
-                UPDATE_QUERY,
-                user.getEmail(),
-                user.getLogin(),
-                user.getName(),
-                user.getBirthday(),
-                user.getId()
-        );
-        return user;
+        Optional<User> oldUser = findOne(FIND_USER_BY_ID, user.getId());
+        if (oldUser.isPresent()) {
+            update(
+                    UPDATE_QUERY,
+                    user.getEmail(),
+                    user.getLogin(),
+                    user.getName(),
+                    user.getBirthday(),
+                    user.getId()
+            );
+            return user;
+        } else {
+            throw new NotFoundException("Пользователь с id=" + user.getId() + " не найден.");
+        }
     }
 
     @Override
