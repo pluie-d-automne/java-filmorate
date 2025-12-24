@@ -6,9 +6,8 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -92,6 +91,55 @@ public class InMemoryUserStorage implements UserStorage {
         users.remove(userId);
         log.info("Пользователь с id={} удалён.", userId);
         return deletedUser;
+    }
+
+    @Override
+    public void addFriend(Long userId, Long friendId) {
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
+        Set<Long> userFriends = (user.getFriends() == null) ? new HashSet<>() : user.getFriends();
+        Set<Long> friendFriends = (friend.getFriends() == null) ? new HashSet<>() : friend.getFriends();
+        userFriends.add(friendId);
+        friendFriends.add(userId);
+        user.setFriends(userFriends);
+        friend.setFriends(friendFriends);
+    }
+
+    @Override
+    public void deleteFriend(Long userId, Long friendId) {
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
+        Set<Long> userFriends = (user.getFriends() == null) ? new HashSet<>() : user.getFriends();
+        Set<Long> friendFriends = (friend.getFriends() == null) ? new HashSet<>() : friend.getFriends();
+        userFriends.remove(friendId);
+        friendFriends.remove(userId);
+        user.setFriends(userFriends);
+        friend.setFriends(friendFriends);
+    }
+
+    @Override
+    public Collection<User> getUserFriends(Long userId) {
+        User user = getUserById(userId);
+        Set<Long> userFriends = (user.getFriends() == null) ? new HashSet<>() : user.getFriends();
+        return userFriends.stream()
+                .map(this::getUserById)
+                .toList();
+    }
+
+    @Override
+    public Collection<User> getCommonFriends(Long userId, Long otherUserId) {
+        User user = getUserById(userId);
+        User otherUser = getUserById(otherUserId);
+        Set<Long> userFriends = (user.getFriends() == null) ? new HashSet<>() : user.getFriends();
+        Set<Long> otherUserFriends = (otherUser.getFriends() == null) ? new HashSet<>() : otherUser.getFriends();
+        Set<Long> commonUserIds = userFriends.stream()
+                .filter(otherUserFriends::contains)
+                .collect(Collectors.toSet());
+        return getAllUsers()
+                .stream()
+                .filter(checkedUser -> commonUserIds.contains(checkedUser.getId()))
+                .collect(Collectors.toSet());
+
     }
 
     private long getNextId() {

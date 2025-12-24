@@ -34,12 +34,12 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/friends")
-    public Set<User> getUserFriends(@PathVariable long userId) {
+    public Collection<User> getUserFriends(@PathVariable long userId) {
         return userService.getUserFriends(userId);
     }
 
     @GetMapping("/{userId}/friends/common/{otherUserId}")
-    public Set<User> getCommonFriends(
+    public Collection<User> getCommonFriends(
             @PathVariable long userId,
             @PathVariable long otherUserId
     ) {

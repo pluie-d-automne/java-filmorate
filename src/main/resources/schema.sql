@@ -38,10 +38,10 @@ CREATE TABLE IF NOT EXISTS "film_likes" (
   "user_id" bigint
 );
 
+DROP TABLE IF EXISTS  "friendships" CASCADE;
 CREATE TABLE IF NOT EXISTS "friendships" (
   "user_id" bigint,
-  "friend_id" bigint,
-  "is_approved" boolean
+  "friend_id" bigint
 );
 
 ALTER TABLE "film_genres" ADD FOREIGN KEY ("film_id") REFERENCES "films" ("id") ON DELETE CASCADE;
@@ -57,6 +57,8 @@ ALTER TABLE "film_likes" ADD FOREIGN KEY ("film_id") REFERENCES "films" ("id") O
 ALTER TABLE "friendships" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "friendships" ADD FOREIGN KEY ("friend_id") REFERENCES "users" ("id") ON DELETE CASCADE;
+
+CREATE UNIQUE INDEX IF NOT EXISTS unique_friendship ON "friendships" ("user_id", "friend_id");
 
 CREATE UNIQUE INDEX IF NOT EXISTS unique_email ON "users" ("email");
 

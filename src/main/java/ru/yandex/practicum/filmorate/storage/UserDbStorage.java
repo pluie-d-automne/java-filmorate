@@ -23,6 +23,13 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         "\"birthday\" = ? WHERE \"id\" = ?";
     private static final String DELETE_QUERY = "DELETE FROM \"users\" WHERE id = ?";
     private static final String FIND_USER_BY_ID = "SELECT * FROM \"users\" WHERE \"id\" = ?";
+    private static final String ADD_FRIEND = "INSERT INTO \"friendships\" (\"user_id\", \"friend_id\") VALUES (?, ?)";
+    private static final String DELETE_FRIEND = "DELETE FROM \"friendships\" WHERE \"user_id\" = ? AND \"friend_id\" = ?";
+    private static final String GET_ALL_FRIENDS = "SELECT * FROM \"users\" WHERE \"id\" IN (SELECT \"friend_id\" " +
+            "FROM \"friendships\" WHERE \"user_id\" = ? )";
+    private static final String GET_COMMON_FRIENDS = "SELECT * FROM \"users\" WHERE \"id\" IN (SELECT \"friend_id\" " +
+            "FROM \"friendships\" WHERE \"user_id\" = ? INTERSECT SELECT \"friend_id\" FROM \"friendships\" WHERE \"user_id\" = ?)";
+
 
     public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
@@ -91,6 +98,62 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
             return user.get();
         } else {
             throw new NotFoundException("Пользователь с id=" + userId + " не найден.");
+        }
+    }
+
+    @Override
+    public void addFriend(Long userId, Long friendId) {
+        Optional<User> user = findOne(FIND_USER_BY_ID,userId);
+        Optional<User> friend = findOne(FIND_USER_BY_ID,friendId);
+
+        if (user.isEmpty()) {
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден.");
+        } else if (friend.isEmpty()) {
+            throw new NotFoundException("Пользователь с id=" + friendId + " не найден.");
+        } else {
+            insert(
+                    ADD_FRIEND,
+                    userId,
+                    friendId
+            );
+        }
+    }
+
+    @Override
+    public void deleteFriend(Long userId, Long friendId) {
+        Optional<User> user = findOne(FIND_USER_BY_ID,userId);
+        Optional<User> friend = findOne(FIND_USER_BY_ID,friendId);
+
+        if (user.isEmpty()) {
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден.");
+        } else if (friend.isEmpty()) {
+            throw new NotFoundException("Пользователь с id=" + friendId + " не найден.");
+        } else {
+            delete(DELETE_FRIEND, userId, friendId);
+        }
+    }
+
+    @Override
+    public Collection<User> getUserFriends(Long userId) {
+        Optional<User> user = findOne(FIND_USER_BY_ID,userId);
+        if (user.isPresent()) {
+            return findMany(GET_ALL_FRIENDS, userId);
+        } else {
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден.");
+        }
+    }
+
+    @Override
+    public Collection<User> getCommonFriends(Long userId, Long otherUserId) {
+        Optional<User> user = findOne(FIND_USER_BY_ID,userId);
+        Optional<User> otherUser = findOne(FIND_USER_BY_ID,otherUserId);
+
+        if (user.isEmpty()) {
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден.");
+        } else if (otherUser.isEmpty()) {
+            throw new NotFoundException("Пользователь с id=" + otherUserId + " не найден.");
+        } else {
+            return findMany(GET_COMMON_FRIENDS, userId, otherUserId);
         }
     }
 }
