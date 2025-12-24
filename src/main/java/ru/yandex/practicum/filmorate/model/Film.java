@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.validators.CinemaDate;
@@ -11,6 +12,7 @@ import java.util.Set;
 
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Film {
     @Null(groups = Marker.OnCreate.class, message = "При добавлении нового фильма id должен быть пустым.")
     @NotNull(groups = Marker.OnUpdate.class, message = "Необходимо указать id фильма, который требуется изменить.")
@@ -28,7 +30,7 @@ public class Film {
     @Positive(groups = {Marker.OnCreate.class, Marker.OnUpdate.class}, message = "Продолжительность фильма должна быть положительным числом.")
     private Integer duration;
     private Set<Long> likes;
-    private List<Genre> genres;
+    private Collection<Genre> genres;
     private Mpa mpa;
     private int likesCnt;
 

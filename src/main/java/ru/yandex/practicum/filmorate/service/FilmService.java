@@ -3,9 +3,11 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -20,16 +22,19 @@ public class FilmService {
     private final UserStorage userStorage;
 
     private final MpaStorage mpaStorage;
+    private final GenreStorage genreStorage;
     private final Comparator<Film> filmLikesComparator = Comparator.comparing(Film::getLikesCnt).reversed();
 
     public FilmService(
             @Qualifier("filmDbStorage")FilmStorage filmStorage,
             @Qualifier("userDbStorage") UserStorage userStorage,
-            MpaStorage mpaStorage
+            MpaStorage mpaStorage,
+            GenreStorage genreStorage
     ) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.mpaStorage = mpaStorage;
+        this.genreStorage = genreStorage;
     }
 
     public Collection<Film> getAllFilms() {
@@ -43,6 +48,11 @@ public class FilmService {
     public Film create(Film newFilm) {
         if (newFilm.getMpa() != null) {
             mpaStorage.getMpaById(newFilm.getMpa().getId());
+        }
+        if (newFilm.getGenres() != null) {
+            for(Genre genre : newFilm.getGenres()) {
+                genreStorage.getGenreById(genre.getId());
+            }
         }
         return filmStorage.create(newFilm);
     }

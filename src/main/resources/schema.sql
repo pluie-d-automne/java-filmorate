@@ -64,7 +64,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS unique_email ON "users" ("email");
 
 CREATE UNIQUE INDEX IF NOT EXISTS unique_login ON "users" ("login");
 
-CREATE UNIQUE INDEX IF NOT EXISTS unique_film_name ON "films" ("name", "release_dt");
+--CREATE UNIQUE INDEX IF NOT EXISTS unique_film_name ON "films" ("name", "release_dt");
 
 CREATE UNIQUE INDEX IF NOT EXISTS unique_rating ON "ratings" ("name");
 
