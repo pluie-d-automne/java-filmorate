@@ -18,7 +18,7 @@ import java.util.Collection;
 public class FilmController {
     private final FilmService filmService;
 
-    public FilmController(InMemoryFilmStorage inMemoryFilmStorage,  FilmService filmService) {
+    public FilmController(FilmService filmService) {
         this.filmService = filmService;
     }
 
