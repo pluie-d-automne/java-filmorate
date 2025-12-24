@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Slf4j
 @Repository
-public class MpaDbStorage extends BaseRepository<Mpa> implements MpaStorage{
+public class MpaDbStorage extends BaseRepository<Mpa> implements MpaStorage {
     private static final String FIND_ALL_QUERY = "SELECT * FROM \"ratings\"";
     private static final String FIND_MPA_BY_ID = "SELECT * FROM \"ratings\" WHERE \"id\" = ?";
 
