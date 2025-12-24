@@ -5,16 +5,16 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component
 @Qualifier("inMemoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new HashMap<>();
+    private final Comparator<Film> filmLikesComparator = Comparator.comparing(Film::getLikesCnt).reversed();
 
     @Override
     public Collection<Film> getAllFilms() {
@@ -87,6 +87,35 @@ public class InMemoryFilmStorage implements FilmStorage {
         films.remove(filmId);
         log.info("Фильм с id={} удалён.", filmId);
         return deletedFilm;
+    }
+
+    @Override
+    public void like(Long filmId, Long userId) {
+        Film film = getFilmById(filmId);
+        Set<Long> filmLikes = (film.getLikes() == null) ? new HashSet<>() : film.getLikes();
+        filmLikes.add(userId);
+        film.setLikes(filmLikes);
+    }
+
+    @Override
+    public void unlike(Long filmId, Long userId) {
+        Film film = getFilmById(filmId);
+        Set<Long> filmLikes = (film.getLikes() == null) ? new HashSet<>() :  film.getLikes();
+        filmLikes.remove(userId);
+        film.setLikes(filmLikes);
+    }
+
+    @Override
+    public Collection<Film> getTopFilms(int count) {
+        List<Film> filmsSorted = getAllFilms()
+                .stream()
+                .sorted(filmLikesComparator)
+                .toList();
+        if (filmsSorted.size() < count) {
+            return filmsSorted;
+        }
+        return filmsSorted.subList(0, count);
+
     }
 
     private long getNextId() {

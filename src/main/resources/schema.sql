@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS "film_genres" (
   "genre_id" int
 );
 
+DROP TABLE IF EXISTS  "film_likes" CASCADE;
 CREATE TABLE IF NOT EXISTS "film_likes" (
   "film_id" bigint,
   "user_id" bigint
