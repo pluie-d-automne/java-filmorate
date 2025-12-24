@@ -3,8 +3,10 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.*;
@@ -16,14 +18,18 @@ public class FilmService {
 
     @Qualifier("userDbStorage")
     private final UserStorage userStorage;
+
+    private final MpaStorage mpaStorage;
     private final Comparator<Film> filmLikesComparator = Comparator.comparing(Film::getLikesCnt).reversed();
 
     public FilmService(
             @Qualifier("filmDbStorage")FilmStorage filmStorage,
-            @Qualifier("userDbStorage") UserStorage userStorage
+            @Qualifier("userDbStorage") UserStorage userStorage,
+            MpaStorage mpaStorage
     ) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.mpaStorage = mpaStorage;
     }
 
     public Collection<Film> getAllFilms() {
@@ -35,6 +41,9 @@ public class FilmService {
     }
 
     public Film create(Film newFilm) {
+        if (newFilm.getMpa() != null) {
+            mpaStorage.getMpaById(newFilm.getMpa().getId());
+        }
         return filmStorage.create(newFilm);
     }
 
