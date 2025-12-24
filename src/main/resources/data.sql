@@ -11,7 +11,7 @@ VALUES (1, 'Комедия'), (2, 'Драма'), (3, 'Мультфильм'), (4
 --VALUES ('ivan@test.com', 'ivan', 'Иван', '1980-03-21'),
 --       ('maria@test.com', 'maria', 'Марья', '1990-05-31');
 
-DELETE FROM  "films";
-INSERT INTO "films" ("name", "description", "release_dt", "duration", "rating_id")
-VALUES ('Бриллиантовая рука', '-', '1969-04-28', 94, 3),
- ('Шрэк', '-', '2001-04-22', 90, 2);
+--DELETE FROM  "films";
+--INSERT INTO "films" ("name", "description", "release_dt", "duration", "rating_id")
+--VALUES ('Бриллиантовая рука', '-', '1969-04-28', 94, 3),
+-- ('Шрэк', '-', '2001-04-22', 90, 2);

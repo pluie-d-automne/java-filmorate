@@ -18,7 +18,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     private static final String FIND_ALL_QUERY = "SELECT * FROM \"users\"";
     private static final String INSERT_QUERY = "INSERT INTO \"users\" (\"email\", \"login\", \"name\", \"birthday\") " +
              "VALUES (?, ?, ?, ?)";
-    private static final String FIND_USER_BY_login = "SELECT * FROM \"users\" WHERE \"login\" = ?";
+    private static final String FIND_USER_BY_LOGIN = "SELECT * FROM \"users\" WHERE \"login\" = ?";
     private static final String UPDATE_QUERY = "UPDATE \"users\" SET \"email\" = ?, \"login\" = ?, \"name\" = ?, " +
         "\"birthday\" = ? WHERE \"id\" = ?";
     private static final String DELETE_QUERY = "DELETE FROM \"users\" WHERE id = ?";
@@ -47,7 +47,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                 user.getName(),
                 user.getBirthday()
         );
-        Optional<User> createdUser = findOne(FIND_USER_BY_login, user.getLogin());
+        Optional<User> createdUser = findOne(FIND_USER_BY_LOGIN, user.getLogin());
         if (createdUser.isPresent()) {
             Long id = createdUser.get().getId();
             user.setId(id);
