@@ -21,6 +21,5 @@ public class User {
     private String name;
     @PastOrPresent(groups = {Marker.OnCreate.class, Marker.OnUpdate.class}, message = "Дата рождения не может быть в будущем.")
     private LocalDate birthday;
-    //private Set<Friendship> friends;
     private Set<Long> friends;
 }

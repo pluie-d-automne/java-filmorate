@@ -22,7 +22,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String INSERT_FILM_QUERY = "INSERT INTO \"films\" (\"name\", \"description\", \"release_dt\", " +
             "\"duration\", \"rating_id\") VALUES (?, ?, ?, ?, ?)";
     private static final String FIND_FILM_BY_NAME = "SELECT * FROM \"films_full\" WHERE \"name\" = ? AND " +
-            "COALESCE(\"release_dt\", '9999-01-01') = COALESCE(?, '9999-01-01')";
+            "COALESCE(\"release_dt\", '9999-01-01') = COALESCE(?, '9999-01-01') ORDER BY \"id\" DESC LIMIT 1";
     private static final String INSERT_GENRE_LINK_QUERY = "INSERT INTO \"film_genres\" (\"film_id\", \"genre_id\") " +
             "VALUES (?, ?)";
     private static final String UPDATE_QUERY = "UPDATE \"films\" SET \"name\" = ?, \"description\" = ?, \"release_dt\" = ?, " +
@@ -31,7 +31,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String LIKE_FILM = "INSERT INTO \"film_likes\" (\"film_id\", \"user_id\") " +
             "VALUES (?, ?)";
     private static final String UNLIKE_FILM = "DELETE FROM \"film_likes\" WHERE \"film_id\" = ? AND \"user_id\" = ?";
-    private static final String TOP_FILMS = "SELECT * FROM \"films_full\" WHERE \"id\" IN (SELECT \"film_id\" FROM "+
+    private static final String TOP_FILMS = "SELECT * FROM \"films_full\" WHERE \"id\" IN (SELECT \"film_id\" FROM " +
             "\"film_likes\" GROUP BY \"film_id\" ORDER BY COUNT(1) DESC LIMIT ?) ORDER BY \"likes_cnt\" DESC";
 
 

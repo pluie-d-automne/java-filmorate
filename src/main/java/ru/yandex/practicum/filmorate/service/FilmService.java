@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.*;
 
@@ -15,8 +14,6 @@ import java.util.*;
 public class FilmService {
     @Qualifier("filmDbStorage")
     private final FilmStorage filmStorage;
-    @Qualifier("userDbStorage")
-    private final UserStorage userStorage;
 
     private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;
@@ -24,12 +21,10 @@ public class FilmService {
 
     public FilmService(
             @Qualifier("filmDbStorage")FilmStorage filmStorage,
-            @Qualifier("userDbStorage") UserStorage userStorage,
             MpaStorage mpaStorage,
             GenreStorage genreStorage
     ) {
         this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
         this.mpaStorage = mpaStorage;
         this.genreStorage = genreStorage;
     }
@@ -47,7 +42,7 @@ public class FilmService {
             mpaStorage.getMpaById(newFilm.getMpa().getId());
         }
         if (newFilm.getGenres() != null) {
-            for(Genre genre : newFilm.getGenres()) {
+            for (Genre genre : newFilm.getGenres()) {
                 genreStorage.getGenreById(genre.getId());
             }
         }
