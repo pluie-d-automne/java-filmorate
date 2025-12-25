@@ -19,9 +19,9 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     private static final String INSERT_QUERY = "INSERT INTO \"users\" (\"email\", \"login\", \"name\", \"birthday\") " +
              "VALUES (?, ?, ?, ?)";
     private static final String FIND_USER_BY_LOGIN = "SELECT * FROM \"users\" WHERE \"login\" = ?";
-    private static final String UPDATE_QUERY = "UPDATE \"users\" SET \"email\" = ?, \"login\" = ?, \"name\" = ?, " +
-        "\"birthday\" = ? WHERE \"id\" = ?";
-    private static final String DELETE_QUERY = "DELETE FROM \"users\" WHERE id = ?";
+    private static final String UPDATE_QUERY = "UPDATE \"users\" SET \"email\" = ?, \"login\" = ?, \"name\" = " +
+            "COALESCE(?, \"name\") , \"birthday\" = ? WHERE \"id\" = ?";
+    private static final String DELETE_QUERY = "DELETE FROM \"users\" WHERE \"id\" = ?";
     private static final String FIND_USER_BY_ID = "SELECT * FROM \"users\" WHERE \"id\" = ?";
     private static final String ADD_FRIEND = "INSERT INTO \"friendships\" (\"user_id\", \"friend_id\") VALUES (?, ?)";
     private static final String DELETE_FRIEND = "DELETE FROM \"friendships\" WHERE \"user_id\" = ? AND \"friend_id\" = ?";
@@ -74,7 +74,12 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                     user.getBirthday(),
                     user.getId()
             );
-            return user;
+            Optional<User> updatedUser = findOne(FIND_USER_BY_ID, user.getId());
+            if (updatedUser.isPresent()) {
+                return updatedUser.get();
+            } else {
+                throw new NotFoundException("Пользователь с id=" + user.getId() + " пропал.");
+            }
         } else {
             throw new NotFoundException("Пользователь с id=" + user.getId() + " не найден.");
         }

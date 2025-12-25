@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS "users" (
   "id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   "email" varchar NOT NULL,
   "login" varchar NOT NULL,
-  "name" varchar,
+  "name" varchar NOT NULL,
   "birthday" date
 );
 
@@ -19,30 +19,30 @@ CREATE TABLE IF NOT EXISTS "films" (
 
 CREATE TABLE IF NOT EXISTS "ratings" (
   "id" smallint PRIMARY KEY,
-  "name" varchar(5)
+  "name" varchar(5) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "genres" (
   "id" int PRIMARY KEY,
-  "name" varchar(20)
+  "name" varchar(20) NOT NULL
 );
 
 DROP TABLE IF EXISTS "film_genres" CASCADE;
 CREATE TABLE IF NOT EXISTS "film_genres" (
-  "film_id" bigint,
-  "genre_id" int
+  "film_id" bigint NOT NULL,
+  "genre_id" int NOT NULL
 );
 
 DROP TABLE IF EXISTS  "film_likes" CASCADE;
 CREATE TABLE IF NOT EXISTS "film_likes" (
-  "film_id" bigint,
-  "user_id" bigint
+  "film_id" bigint NOT NULL,
+  "user_id" bigint NOT NULL
 );
 
 DROP TABLE IF EXISTS  "friendships" CASCADE;
 CREATE TABLE IF NOT EXISTS "friendships" (
-  "user_id" bigint,
-  "friend_id" bigint
+  "user_id" bigint NOT NULL,
+  "friend_id" bigint NOT NULL
 );
 
 ALTER TABLE "film_genres" ADD FOREIGN KEY ("film_id") REFERENCES "films" ("id") ON DELETE CASCADE;
