@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS  "users" CASCADE;
+--DROP TABLE IF EXISTS  "users" CASCADE;
 CREATE TABLE IF NOT EXISTS "users" (
   "id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   "email" varchar NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS "users" (
   "birthday" date
 );
 
-DROP TABLE IF EXISTS "films" CASCADE;
+--DROP TABLE IF EXISTS "films" CASCADE;
 CREATE TABLE IF NOT EXISTS "films" (
   "id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   "name" varchar NOT NULL,
@@ -27,19 +27,19 @@ CREATE TABLE IF NOT EXISTS "genres" (
   "name" varchar(20) NOT NULL
 );
 
-DROP TABLE IF EXISTS "film_genres" CASCADE;
+--DROP TABLE IF EXISTS "film_genres" CASCADE;
 CREATE TABLE IF NOT EXISTS "film_genres" (
   "film_id" bigint NOT NULL,
   "genre_id" int NOT NULL
 );
 
-DROP TABLE IF EXISTS  "film_likes" CASCADE;
+--DROP TABLE IF EXISTS  "film_likes" CASCADE;
 CREATE TABLE IF NOT EXISTS "film_likes" (
   "film_id" bigint NOT NULL,
   "user_id" bigint NOT NULL
 );
 
-DROP TABLE IF EXISTS  "friendships" CASCADE;
+--DROP TABLE IF EXISTS  "friendships" CASCADE;
 CREATE TABLE IF NOT EXISTS "friendships" (
   "user_id" bigint NOT NULL,
   "friend_id" bigint NOT NULL
@@ -73,7 +73,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS unique_genre ON "genres" ("name");
 
 CREATE UNIQUE INDEX IF NOT EXISTS unique_film_genre ON "film_genres" ("film_id", "genre_id");
 
-DROP VIEW IF EXISTS "films_full";
+--DROP VIEW IF EXISTS "films_full";
 CREATE VIEW IF NOT EXISTS "films_full" AS
 SELECT "films"."id",
        "films"."name",

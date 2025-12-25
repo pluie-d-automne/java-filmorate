@@ -36,53 +36,51 @@
 * user_id - идентификатор пользователя, поставившего лайк фильму
 
 **friendship** - таблица с данными о том, кто с кем дружит в filmorate.
-* user_id - идентификатор пользователя, отправившего запрос на добавление в друзья
-* friend_id - идентификатор пользователя, которому был направлен запрос
-* is_approved - флаг того, подтверждена ли дружба: True - если второй пользователь подтвердил дружбу, False - если не подтвердил.
+* user_id - идентификатор пользователя, добавившего друга
+* friend_id - идентификатор пользователя, которого добавили в друзья
+
+*В случае взаимной (подтверждённой) дружбы будет две записи: ("user1", "user2") и ("user2", "user1").
+При неподтверждённой (односторонней) дружбе будет только запись ("user1", "user2").*
 
 ### Примеры запросов
-1) Жанры, к которым относится фильм с id = 1:
+1) Все данные о фильме:
 ```(sql)
-SELECT g.name AS genre
-FROM film_genres AS fg 
-JOIN genres AS g ON g.id = fg.genre_id
-WHERE fg.film_id = 1;
+SELECT "films"."id",
+       "films"."name",
+       "films"."description",
+       "films"."release_dt",
+       "films"."duration",
+       "films"."rating_id",
+       "r"."name" AS "mpa_name",
+       "g"."genres",
+       "likes"."likes_cnt"
+FROM "films"
+LEFT JOIN "ratings" AS "r" ON "r"."id" = "films"."rating_id"
+LEFT JOIN (SELECT "film_id", ARRAY_AGG("genre_id" ORDER BY "genre_id") AS "genres"
+	FROM "film_genres"
+	GROUP BY "film_id"
+) AS "g" ON "g"."film_id" = "films"."id"
+LEFT JOIN (SELECT "film_id", COUNT("user_id") AS "likes_cnt"
+	FROM "film_likes"
+	GROUP BY "film_id" ) AS "likes" ON "likes"."film_id" = "films"."id";
 ```
 
-2) Подсчёт количества лайков у фильма с id = 1:
+2) Список идентификаторов топ-10 самых залайканных фильмов:
 ```(sql)
-SELECT COUNT(1) as likes_cnt
-FROM film_likes
-WHERE film_id = 1;
+SELECT "film_id"
+FROM "film_likes"
+GROUP BY "film_id"
+ORDER BY COUNT(1) DESC
+LIMIT 10;
 ```
 
-3) Топ-10 самых залайканых фильмов
+3) Список общих друзей для user_id1 и user_id2
 ```(sql)
-WITH top AS (
-    SELECT film_id, COUNT(1) AS likes_cnt
-    FROM film_likes
-    GROUP BY film_id
-    ORDER BY likes_cnt DESC
-    LIMIT 10
-)
-
-SELECT films.id,
-       films.name,
-       top.likes_cnt
-FROM top
-JOIN films ON top.film_id = films.id
-ORDER BY likes_cnt DESC;
-```
-
-4) Список подтверждённых друзей пользователя с id = 1   
-```(sql)
-    SELECT friend_id
-    FROM friendships
-    WHERE user_id = 1 AND is_approved
-
-    UNION
-
-    SELECT user_id AS friend_id
-    FROM friendships
-    WHERE friend_id = 1 AND is_approved
+SELECT *
+FROM "users"
+WHERE "id" IN (
+    SELECT "friend_id" FROM "friendships" WHERE "user_id" = user_id1
+    INTERSECT
+    SELECT "friend_id" FROM "friendships" WHERE "user_id" = user_id2
+);
 ```
