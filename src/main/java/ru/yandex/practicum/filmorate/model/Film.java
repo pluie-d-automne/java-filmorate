@@ -31,11 +31,4 @@ public class Film {
     private Collection<Genre> genres;
     private Mpa mpa;
     private int likesCnt;
-
-    public int getLikesCnt() {
-        if (likes == null) {
-            return 0;
-        }
-        return likes.size();
-    }
 }

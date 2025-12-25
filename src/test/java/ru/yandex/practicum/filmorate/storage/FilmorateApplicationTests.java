@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.ComponentScan;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
@@ -31,12 +32,13 @@ class FilmorateApplicationTests {
 	@Autowired
 	private final GenreDbStorage genreDbStorage;
 
+	@Autowired
+	private final FilmDbStorage filmDbStorage;
+
 	@Test
-	public void testFindNonExistindUserById() {
+	public void testFindNonExistingUserById() {
 		Long id = 100L;
 		Assertions.assertThatExceptionOfType(NotFoundException.class).isThrownBy(() -> userStorage.getUserById(id));
-	;
-
 	}
 
     @Test
@@ -45,7 +47,6 @@ class FilmorateApplicationTests {
 		createUser.setEmail("some@test.ru");
 		createUser.setLogin("someuser");
 		User user = userStorage.create(createUser);
-		Long id = user.getId();
 		Assertions.assertThat(user).hasFieldOrPropertyWithValue("name", "someuser");
 		Assertions.assertThat(user).hasFieldOrPropertyWithValue("login", "someuser");
 		Assertions.assertThat(user).hasFieldOrPropertyWithValue("email", "some@test.ru");
@@ -191,5 +192,115 @@ class FilmorateApplicationTests {
 		Genre firstGenre = genreDbStorage.getGenreById(1);
 		Assertions.assertThat(firstGenre).hasFieldOrPropertyWithValue("id", 1);
 		Assertions.assertThat(firstGenre).hasFieldOrPropertyWithValue("name", "Комедия");
+	}
+
+	@Test
+	public void testFindNonExistingFilmById() {
+		Long id = 100L;
+		Assertions.assertThatExceptionOfType(NotFoundException.class).isThrownBy(() -> filmDbStorage.getFilmById(id));
+	}
+
+	@Test
+	public void testCreateFilm() {
+		Film createFilm = new Film();
+		createFilm.setName("Some Film");
+		Film film = filmDbStorage.create(createFilm);
+		Assertions.assertThat(film).hasFieldOrPropertyWithValue("name", "Some Film");
+	}
+
+	@Test
+	public void testUpdateFilm() {
+		Film initialFilm = new Film();
+		initialFilm.setName("Some Film");
+		initialFilm = filmDbStorage.create(initialFilm);
+		Long id = initialFilm.getId();
+
+		Film newFilm = new Film();
+		newFilm.setId(id);
+		newFilm.setName("Updated Film");
+		Film film = filmDbStorage.update(newFilm);
+		Assertions.assertThat(film).hasFieldOrPropertyWithValue("id", id);
+		Assertions.assertThat(film).hasFieldOrPropertyWithValue("name", "Updated Film");
+	}
+
+	@Test
+	public void testDeleteFilm() {
+		Film initialFilm = new Film();
+		initialFilm.setName("Some Film");
+		initialFilm = filmDbStorage.create(initialFilm);
+		Long id = initialFilm.getId();
+		filmDbStorage.delete(id);
+		Assertions.assertThatExceptionOfType(NotFoundException.class).isThrownBy(() -> filmDbStorage.getFilmById(id));;
+	}
+
+	@Test
+	public void testLikeFilm() {
+		Film initialFilm = new Film();
+		initialFilm.setName("Some Film");
+		initialFilm = filmDbStorage.create(initialFilm);
+		Long filmId = initialFilm.getId();
+
+		User firstUser = new User();
+		firstUser.setEmail("first@test.ru");
+		firstUser.setLogin("firstuser");
+		firstUser = userStorage.create(firstUser);
+		Long firstUserId = firstUser.getId();
+
+		filmDbStorage.like(filmId, firstUserId);
+		Assertions.assertThat(filmDbStorage.getFilmById(filmId)).hasFieldOrPropertyWithValue("likesCnt", 1);
+	}
+
+	@Test
+	public void testUnlikeFilm() {
+		Film initialFilm = new Film();
+		initialFilm.setName("Some Film");
+		initialFilm = filmDbStorage.create(initialFilm);
+		Long filmId = initialFilm.getId();
+
+		User firstUser = new User();
+		firstUser.setEmail("first@test.ru");
+		firstUser.setLogin("firstuser");
+		firstUser = userStorage.create(firstUser);
+		Long firstUserId = firstUser.getId();
+
+		filmDbStorage.like(filmId, firstUserId);
+		filmDbStorage.unlike(filmId, firstUserId);
+		Assertions.assertThat(filmDbStorage.getFilmById(filmId)).hasFieldOrPropertyWithValue("likesCnt", 0);
+	}
+
+	@Test
+	public void testTopFilm() {
+		Film firstFilm = new Film();
+		firstFilm.setName("First Film");
+		firstFilm = filmDbStorage.create(firstFilm);
+		Long firstFilmId = firstFilm.getId();
+
+		Film secondFilm = new Film();
+		secondFilm.setName("Second Film");
+		secondFilm = filmDbStorage.create(secondFilm);
+		Long secondFilmId = secondFilm.getId();
+
+		User firstUser = new User();
+		firstUser.setEmail("first@test.ru");
+		firstUser.setLogin("firstuser");
+		firstUser = userStorage.create(firstUser);
+		Long firstUserId = firstUser.getId();
+
+		User secondUser = new User();
+		secondUser.setEmail("second@test.ru");
+		secondUser.setLogin("seconduser");
+		secondUser = userStorage.create(secondUser);
+		Long secondUserId = secondUser.getId();
+
+		filmDbStorage.like(firstFilmId, firstUserId);
+		filmDbStorage.like(firstFilmId, secondUserId);
+		filmDbStorage.like(secondFilmId, firstUserId);
+
+		firstFilm = filmDbStorage.getFilmById(firstFilmId);
+		secondFilm = filmDbStorage.getFilmById(secondFilmId);
+		Collection<Film> topFilms = filmDbStorage.getTopFilms(2);
+		Assertions.assertThat(topFilms.size()).isEqualTo(2);
+		Assertions.assertThat(topFilms.toArray()[0]).isEqualTo(firstFilm);
+		Assertions.assertThat(topFilms.toArray()[1]).isEqualTo(secondFilm);
 	}
 }

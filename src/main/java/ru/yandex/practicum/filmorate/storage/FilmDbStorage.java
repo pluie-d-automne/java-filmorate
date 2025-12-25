@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.*;
 
@@ -20,7 +21,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String DELETE_FILM_BY_ID = "DELETE FROM \"films\" WHERE \"id\" = ?";
     private static final String INSERT_FILM_QUERY = "INSERT INTO \"films\" (\"name\", \"description\", \"release_dt\", " +
             "\"duration\", \"rating_id\") VALUES (?, ?, ?, ?, ?)";
-    private static final String FIND_FILM_BY_NAME = "SELECT * FROM \"films_full\" WHERE \"name\" = ? AND \"release_dt\" = ?";
+    private static final String FIND_FILM_BY_NAME = "SELECT * FROM \"films_full\" WHERE \"name\" = ? AND " +
+            "COALESCE(\"release_dt\", '9999-01-01') = COALESCE(?, '9999-01-01')";
     private static final String INSERT_GENRE_LINK_QUERY = "INSERT INTO \"film_genres\" (\"film_id\", \"genre_id\") " +
             "VALUES (?, ?)";
     private static final String UPDATE_QUERY = "UPDATE \"films\" SET \"name\" = ?, \"description\" = ?, \"release_dt\" = ?, " +
@@ -55,13 +57,15 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     @Override
     public Film create(Film film) {
+        Mpa mpa = film.getMpa();
+        Integer mpaId = mpa != null ? mpa.getId() : null;
         insert(
                 INSERT_FILM_QUERY,
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                film.getMpa().getId()
+                mpaId
         );
         Optional<Film> createdFilm = findOne(FIND_FILM_BY_NAME, film.getName(), film.getReleaseDate());
 
@@ -73,6 +77,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                     insert(INSERT_GENRE_LINK_QUERY, id, genre.getId());
                 }
             }
+            film.setId(id);
         }
         return film;
     }
@@ -83,13 +88,15 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         log.trace("Request to change film with id=" + filmId);
         Optional<Film> oldFilm = findOne(FIND_FILM_BY_ID, filmId);
         if (oldFilm.isPresent()) {
+            Mpa mpa = film.getMpa();
+            Integer mpaId = mpa != null ? mpa.getId() : null;
             update(
                     UPDATE_QUERY,
                     film.getName(),
                     film.getDescription(),
                     film.getReleaseDate(),
                     film.getDuration(),
-                    film.getMpa().getId(),
+                    mpaId,
                     filmId
             );
             if (film.getGenres() != null) {
@@ -118,11 +125,13 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     @Override
     public void like(Long filmId, Long userId) {
         insert(LIKE_FILM, filmId, userId);
+        log.info("Добавлен лайк пользователем " + userId + " фильму " + filmId);
     }
 
     @Override
     public void unlike(Long filmId, Long userId) {
         delete(UNLIKE_FILM, filmId, userId);
+        log.info("Удалён лайк пользователя " + userId + " фильму " + filmId);
     }
 
     @Override

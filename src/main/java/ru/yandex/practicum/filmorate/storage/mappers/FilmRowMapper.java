@@ -23,7 +23,9 @@ public class FilmRowMapper implements RowMapper<Film> {
         film.setId(resultSet.getLong("id"));
         film.setName(resultSet.getString("name"));
         film.setDescription(resultSet.getString("description"));
-        film.setReleaseDate(resultSet.getDate("release_dt").toLocalDate());
+        if (resultSet.getDate("release_dt") != null) {
+            film.setReleaseDate(resultSet.getDate("release_dt").toLocalDate());
+        }
         film.setDuration(resultSet.getInt("duration"));
         Array array = resultSet.getArray("genres");
         if (array != null) {
@@ -41,10 +43,12 @@ public class FilmRowMapper implements RowMapper<Film> {
         film.setLikesCnt(resultSet.getInt("likes_cnt"));
         Integer mpaId = resultSet.getInt("rating_id");
         String mpaName = resultSet.getString("mpa_name");
-        Mpa mpa = new Mpa();
-        mpa.setId(mpaId);
-        mpa.setName(mpaName);
-        film.setMpa(mpa);
+        if (mpaName != null) {
+            Mpa mpa = new Mpa();
+            mpa.setId(mpaId);
+            mpa.setName(mpaName);
+            film.setMpa(mpa);
+        }
         return film;
     }
 }
