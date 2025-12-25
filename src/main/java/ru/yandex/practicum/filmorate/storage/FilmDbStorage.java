@@ -72,11 +72,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         if (createdFilm.isPresent()) {
             Long id = createdFilm.get().getId();
             film.setId(id);
-            if (film.getGenres() != null) {
-                for (Genre genre : film.getGenres()) {
-                    insert(INSERT_GENRE_LINK_QUERY, id, genre.getId());
-                }
-            }
+            updateFilmGenres(film.getGenres(), id);
             film.setId(id);
         }
         return film;
@@ -99,12 +95,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                     mpaId,
                     filmId
             );
-            if (film.getGenres() != null) {
-                delete(DELETE_FILM_GENRES_BY_ID, filmId);
-                for (Genre genre : film.getGenres()) {
-                    insert(INSERT_GENRE_LINK_QUERY, filmId, genre.getId());
-                }
-            }
+            updateFilmGenres(film.getGenres(), filmId);
             return film;
         } else {
             throw new NotFoundException("Фильм с id=" + film.getId() + " не найден.");
@@ -137,6 +128,15 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     @Override
     public Collection<Film> getTopFilms(int count) {
         return findMany(TOP_FILMS, count);
+    }
+
+    void updateFilmGenres(Collection<Genre> genres, Long filmId) {
+        if (genres != null && !genres.isEmpty()) {
+            delete(DELETE_FILM_GENRES_BY_ID, filmId);
+            for (Genre genre : new HashSet<>(genres)) {
+                insert(INSERT_GENRE_LINK_QUERY, filmId, genre.getId());
+            }
+        }
     }
 
 }

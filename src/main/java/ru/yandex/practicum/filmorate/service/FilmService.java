@@ -30,11 +30,15 @@ public class FilmService {
     }
 
     public Collection<Film> getAllFilms() {
-        return filmStorage.getAllFilms();
+        Collection<Film> newFilms = new ArrayList<>();
+        for (Film film : filmStorage.getAllFilms()) {
+            newFilms.add(updateGenres(film));
+        }
+        return newFilms;
     }
 
     public Film getFilmById(long filmId) {
-        return filmStorage.getFilmById(filmId);
+        return updateGenres(filmStorage.getFilmById(filmId));
     }
 
     public Film create(Film newFilm) {
@@ -63,5 +67,22 @@ public class FilmService {
 
     public Collection<Film> getTopFilms(int count) {
         return filmStorage.getTopFilms(count);
+    }
+
+    private Film updateGenres(Film film) {
+        Collection<Genre> genres = film.getGenres();
+
+        if (genres != null) {
+            Collection<Genre> newGenres = new ArrayList<>();
+
+            for (Genre genre : genres) {
+                genre = genreStorage.getGenreById(genre.getId());
+                newGenres.add(genre);
+            }
+
+            film.setGenres(newGenres);
+        }
+
+       return film;
     }
 }
