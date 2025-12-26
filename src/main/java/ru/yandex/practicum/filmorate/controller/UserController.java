@@ -7,10 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Marker;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.util.Collection;
-import java.util.Set;
 
 @Validated
 @Slf4j
@@ -19,7 +17,7 @@ import java.util.Set;
 public class UserController {
     private final UserService userService;
 
-    public UserController(InMemoryUserStorage inMemoryUserStorage, UserService userService) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
@@ -34,12 +32,12 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/friends")
-    public Set<User> getUserFriends(@PathVariable long userId) {
+    public Collection<User> getUserFriends(@PathVariable long userId) {
         return userService.getUserFriends(userId);
     }
 
     @GetMapping("/{userId}/friends/common/{otherUserId}")
-    public Set<User> getCommonFriends(
+    public Collection<User> getCommonFriends(
             @PathVariable long userId,
             @PathVariable long otherUserId
     ) {
@@ -48,14 +46,16 @@ public class UserController {
 
     @PostMapping
     @Validated({Marker.OnCreate.class})
-    public User create(@Valid @RequestBody User newUser) {
-        return userService.create(newUser);
+    public User create(@Valid @RequestBody User user) {
+        log.info("Create new user: {}", user);
+        return userService.create(user);
     }
 
     @PutMapping
     @Validated({Marker.OnUpdate.class})
-    public User update(@Valid @RequestBody User newUser) {
-        return userService.update(newUser);
+    public User update(@Valid @RequestBody User user) {
+        log.info("Update user: {}", user);
+        return userService.update(user);
     }
 
     @PutMapping("/{userId}/friends/{friendId}")
@@ -63,6 +63,7 @@ public class UserController {
             @PathVariable Long userId,
             @PathVariable Long friendId
     ) {
+        log.info("User with id={} adds user with id={} to friends", userId, friendId);
         userService.addFriend(userId, friendId);
     }
 
@@ -71,6 +72,7 @@ public class UserController {
             @PathVariable Long userId,
             @PathVariable Long friendId
     ) {
+        log.info("User with id={} deletes user with id={} from friends", userId, friendId);
         userService.deleteFriend(userId, friendId);
     }
 

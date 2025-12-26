@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.validators.CinemaDate;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Set;
 
 
@@ -25,11 +26,7 @@ public class Film {
     @Positive(groups = {Marker.OnCreate.class, Marker.OnUpdate.class}, message = "Продолжительность фильма должна быть положительным числом.")
     private Integer duration;
     private Set<Long> likes;
-
-    public int getLikesCnt() {
-        if (likes == null) {
-            return 0;
-        }
-        return likes.size();
-    }
+    private Collection<Genre> genres;
+    private Mpa mpa;
+    private int likesCnt;
 }
