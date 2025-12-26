@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import java.util.*;
 
@@ -15,17 +14,14 @@ public class FilmService {
     @Qualifier("filmDbStorage")
     private final FilmStorage filmStorage;
 
-    private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;
 
 
     public FilmService(
             @Qualifier("filmDbStorage")FilmStorage filmStorage,
-            MpaStorage mpaStorage,
             GenreStorage genreStorage
     ) {
         this.filmStorage = filmStorage;
-        this.mpaStorage = mpaStorage;
         this.genreStorage = genreStorage;
     }
 
@@ -42,14 +38,6 @@ public class FilmService {
     }
 
     public Film create(Film newFilm) {
-        if (newFilm.getMpa() != null) {
-            mpaStorage.getMpaById(newFilm.getMpa().getId());
-        }
-        if (newFilm.getGenres() != null) {
-            for (Genre genre : newFilm.getGenres()) {
-                genreStorage.getGenreById(genre.getId());
-            }
-        }
         return filmStorage.create(newFilm);
     }
 
@@ -70,17 +58,14 @@ public class FilmService {
     }
 
     private Film updateGenres(Film film) {
-        Collection<Genre> genres = film.getGenres();
-
-        if (genres != null) {
-            Collection<Genre> newGenres = new ArrayList<>();
-
-            for (Genre genre : genres) {
-                genre = genreStorage.getGenreById(genre.getId());
-                newGenres.add(genre);
-            }
-
-            film.setGenres(newGenres);
+        if (film.getGenres() != null) {
+            Collection<Integer> genreIds = film.getGenres().stream().map(Genre::getId).toList();
+            List<Genre> updatedGenres = genreStorage.getAllGenre()
+                    .stream()
+                    .filter(genre -> genreIds.contains(genre.getId()))
+                    .sorted(Comparator.comparing(Genre::getId))
+                    .toList();
+            film.setGenres(updatedGenres);
         }
 
        return film;

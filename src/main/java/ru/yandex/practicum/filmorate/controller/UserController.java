@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Marker;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.util.Collection;
 
@@ -18,7 +17,7 @@ import java.util.Collection;
 public class UserController {
     private final UserService userService;
 
-    public UserController(InMemoryUserStorage inMemoryUserStorage, UserService userService) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
@@ -47,14 +46,16 @@ public class UserController {
 
     @PostMapping
     @Validated({Marker.OnCreate.class})
-    public User create(@Valid @RequestBody User newUser) {
-        return userService.create(newUser);
+    public User create(@Valid @RequestBody User user) {
+        log.info("Create new user: {}", user);
+        return userService.create(user);
     }
 
     @PutMapping
     @Validated({Marker.OnUpdate.class})
-    public User update(@Valid @RequestBody User newUser) {
-        return userService.update(newUser);
+    public User update(@Valid @RequestBody User user) {
+        log.info("Update user: {}", user);
+        return userService.update(user);
     }
 
     @PutMapping("/{userId}/friends/{friendId}")
@@ -62,6 +63,7 @@ public class UserController {
             @PathVariable Long userId,
             @PathVariable Long friendId
     ) {
+        log.info("User with id={} adds user with id={} to friends", userId, friendId);
         userService.addFriend(userId, friendId);
     }
 
@@ -70,6 +72,7 @@ public class UserController {
             @PathVariable Long userId,
             @PathVariable Long friendId
     ) {
+        log.info("User with id={} deletes user with id={} from friends", userId, friendId);
         userService.deleteFriend(userId, friendId);
     }
 

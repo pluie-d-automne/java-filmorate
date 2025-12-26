@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import com.sun.jdi.InternalException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -37,6 +38,10 @@ public class BaseRepository<T> {
         if (rowsUpdated == 0) {
             throw new InternalException("Не удалось обновить данные");
         }
+    }
+
+    protected void batchInsert(String query, BatchPreparedStatementSetter batchPreparedStatementSetter) {
+        jdbc.batchUpdate(query, batchPreparedStatementSetter);
     }
 
     protected void insert(String query, Object... params) {

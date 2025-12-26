@@ -39,12 +39,14 @@ public class FilmController {
     @PostMapping
     @Validated({Marker.OnCreate.class})
     public Film create(@Valid @RequestBody Film newFilm) {
+        log.info("Add new film: {}", newFilm.toString());
         return filmService.create(newFilm);
     }
 
     @PutMapping
     @Validated({Marker.OnUpdate.class})
     public Film update(@Valid @RequestBody Film newFilm) {
+        log.info("Update film: {}", newFilm.toString());
         return filmService.update(newFilm);
     }
 
@@ -53,6 +55,7 @@ public class FilmController {
             @PathVariable Long filmId,
             @PathVariable Long userId
     ) {
+        log.info("User with id={} adds like to a film with id={}", userId, filmId);
         filmService.like(filmId, userId);
     }
 
@@ -61,6 +64,7 @@ public class FilmController {
             @PathVariable Long filmId,
             @PathVariable Long userId
     ) {
+        log.info("User with id={} unlikes a film with id={}", userId, filmId);
         filmService.unlike(filmId, userId);
     }
 

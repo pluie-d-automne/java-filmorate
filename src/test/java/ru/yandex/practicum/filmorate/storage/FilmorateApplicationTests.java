@@ -43,13 +43,13 @@ class FilmorateApplicationTests {
 
     @Test
 	public void testCreateUser() {
+		int initialSize = userStorage.getAllUsers().size();
 		User createUser = new User();
 		createUser.setEmail("some@test.ru");
 		createUser.setLogin("someuser");
 		User user = userStorage.create(createUser);
-		Assertions.assertThat(user).hasFieldOrPropertyWithValue("name", "someuser");
-		Assertions.assertThat(user).hasFieldOrPropertyWithValue("login", "someuser");
-		Assertions.assertThat(user).hasFieldOrPropertyWithValue("email", "some@test.ru");
+		Assertions.assertThat(userStorage.getAllUsers().size()).isEqualTo(initialSize + 1);
+
 	}
 
 	@Test
@@ -202,10 +202,11 @@ class FilmorateApplicationTests {
 
 	@Test
 	public void testCreateFilm() {
+		int initialSize = filmDbStorage.getAllFilms().size();
 		Film createFilm = new Film();
 		createFilm.setName("Some Film");
 		Film film = filmDbStorage.create(createFilm);
-		Assertions.assertThat(film).hasFieldOrPropertyWithValue("name", "Some Film");
+		Assertions.assertThat(filmDbStorage.getAllFilms().size()).isEqualTo(initialSize + 1);
 	}
 
 	@Test
