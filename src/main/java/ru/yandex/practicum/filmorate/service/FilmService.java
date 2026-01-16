@@ -57,6 +57,10 @@ public class FilmService {
         return filmStorage.getTopFilms(count);
     }
 
+    public void delete(Long filmId) {
+        filmStorage.delete(filmId);
+    }
+
     private Film updateGenres(Film film) {
         if (film.getGenres() != null) {
             Collection<Integer> genreIds = film.getGenres().stream().map(Genre::getId).toList();

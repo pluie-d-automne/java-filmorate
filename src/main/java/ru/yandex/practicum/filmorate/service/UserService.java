@@ -48,4 +48,8 @@ public class UserService {
     public Collection<User> getCommonFriends(Long userId, Long otherUserId) {
         return userStorage.getCommonFriends(userId, otherUserId);
     }
+
+    public void delete(Long userId) {
+        userStorage.delete(userId);
+    }
 }
