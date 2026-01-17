@@ -2,8 +2,10 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
@@ -16,19 +18,22 @@ public class FilmService {
 
     private final GenreStorage genreStorage;
 
+    private final DirectorStorage directorStorage;
 
     public FilmService(
             @Qualifier("filmDbStorage")FilmStorage filmStorage,
-            GenreStorage genreStorage
+            GenreStorage genreStorage,
+            DirectorStorage directorStorage
     ) {
         this.filmStorage = filmStorage;
         this.genreStorage = genreStorage;
+        this.directorStorage = directorStorage;
     }
 
     public Collection<Film> getAllFilms() {
         Collection<Film> newFilms = new ArrayList<>();
         for (Film film : filmStorage.getAllFilms()) {
-            newFilms.add(updateGenres(film));
+            newFilms.add(updateDirectors(updateGenres(film)));
         }
         return newFilms;
     }
@@ -54,7 +59,19 @@ public class FilmService {
     }
 
     public Collection<Film> getTopFilms(int count) {
-        return filmStorage.getTopFilms(count);
+        Collection<Film> newFilms = new ArrayList<>();
+        for (Film film : filmStorage.getTopFilms(count)) {
+            newFilms.add(updateDirectors(updateGenres(film)));
+        }
+        return newFilms;
+    }
+
+    public Collection<Film> getFilmsByDirector(Long directorId, String sortBy) {
+        Collection<Film> newFilms = new ArrayList<>();
+        for (Film film : filmStorage.getFilmsByDirector(directorId, sortBy)) {
+            newFilms.add(updateDirectors(updateGenres(film)));
+        }
+        return newFilms;
     }
 
     public void delete(Long filmId) {
@@ -73,5 +90,19 @@ public class FilmService {
         }
 
        return film;
+    }
+
+    private Film updateDirectors(Film film) {
+        if (film.getDirectors() != null && ! film.getDirectors().isEmpty()) {
+            Collection<Long> directorIds = film.getDirectors().stream().map(Director::getId).toList();
+            List<Director> updatedDirector = directorStorage.getAllDirectors()
+                    .stream()
+                    .filter(director -> directorIds.contains(director.getId()))
+                    .sorted(Comparator.comparing(Director::getId))
+                    .toList();
+            film.setDirectors(updatedDirector);
+        }
+
+        return film;
     }
 }

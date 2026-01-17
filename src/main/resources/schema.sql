@@ -45,6 +45,18 @@ CREATE TABLE IF NOT EXISTS "friendships" (
   "friend_id" bigint NOT NULL
 );
 
+--DROP TABLE IF EXISTS  "directors" CASCADE;
+CREATE TABLE IF NOT EXISTS "directors" (
+  "id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "name" varchar NOT NULL
+);
+
+--DROP TABLE IF EXISTS  "film_directors" CASCADE;
+CREATE TABLE IF NOT EXISTS "film_directors" (
+  "film_id" bigint NOT NULL,
+  "director_id" bigint NOT NULL
+);
+
 ALTER TABLE "film_genres" ADD FOREIGN KEY ("film_id") REFERENCES "films" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "film_genres" ADD FOREIGN KEY ("genre_id") REFERENCES "genres" ("id");
@@ -58,6 +70,12 @@ ALTER TABLE "film_likes" ADD FOREIGN KEY ("film_id") REFERENCES "films" ("id") O
 ALTER TABLE "friendships" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "friendships" ADD FOREIGN KEY ("friend_id") REFERENCES "users" ("id") ON DELETE CASCADE;
+
+ALTER TABLE "film_directors" ADD FOREIGN KEY ("film_id") REFERENCES "films" ("id") ON DELETE CASCADE;
+
+ALTER TABLE "film_directors" ADD FOREIGN KEY ("director_id") REFERENCES "directors" ("id") ON DELETE CASCADE;
+
+CREATE UNIQUE INDEX IF NOT EXISTS unique_film_directors ON "film_directors" ("film_id", "director_id");
 
 CREATE UNIQUE INDEX IF NOT EXISTS unique_friendship ON "friendships" ("user_id", "friend_id");
 
@@ -83,9 +101,14 @@ SELECT "films"."id",
        "films"."rating_id",
        "r"."name" AS "mpa_name",
        "g"."genres",
+       "dir"."director",
        "likes"."likes_cnt"
 FROM "films"
 LEFT JOIN "ratings" AS "r" ON "r"."id" = "films"."rating_id"
+LEFT JOIN (SELECT "film_id", ARRAY_AGG("director_id" ORDER BY "director_id") AS "director"
+    FROM "film_directors"
+    GROUP BY "film_id"
+) AS "dir" ON "dir"."film_id" = "films"."id"
 LEFT JOIN (SELECT "film_id", ARRAY_AGG("genre_id" ORDER BY "genre_id") AS "genres"
 	FROM "film_genres"
 	GROUP BY "film_id"

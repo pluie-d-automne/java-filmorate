@@ -29,4 +29,5 @@ public class Film {
     private Collection<Genre> genres;
     private Mpa mpa;
     private int likesCnt;
+    private Collection<Director> directors;
 }
