@@ -13,7 +13,7 @@ import java.util.Optional;
 @Slf4j
 @Repository
 public class GenreDbStorage extends BaseRepository<Genre> implements GenreStorage {
-    private static final String FIND_ALL_QUERY = "SELECT * FROM \"genres\"";
+    private static final String FIND_ALL_QUERY = "SELECT * FROM \"genres\" ORDER BY \"id\"";
     private static final String FIND_GENRE_BY_ID = "SELECT * FROM \"genres\" WHERE \"id\" = ?";
 
     public GenreDbStorage(JdbcTemplate jdbc, RowMapper<Genre> mapper) {
