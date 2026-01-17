@@ -1,4 +1,4 @@
---DROP TABLE IF EXISTS  "users" CASCADE;
+DROP TABLE IF EXISTS  "users" CASCADE;
 CREATE TABLE IF NOT EXISTS "users" (
   "id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   "email" varchar NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS "users" (
   "birthday" date
 );
 
---DROP TABLE IF EXISTS "films" CASCADE;
+DROP TABLE IF EXISTS "films" CASCADE;
 CREATE TABLE IF NOT EXISTS "films" (
   "id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   "name" varchar NOT NULL,
@@ -17,17 +17,17 @@ CREATE TABLE IF NOT EXISTS "films" (
   "rating_id" smallint
 );
 
---CREATE TABLE IF NOT EXISTS "ratings" (
+CREATE TABLE IF NOT EXISTS "ratings" (
   "id" smallint PRIMARY KEY,
   "name" varchar(5) NOT NULL
 );
 
---CREATE TABLE IF NOT EXISTS "genres" (
+CREATE TABLE IF NOT EXISTS "genres" (
   "id" int PRIMARY KEY,
   "name" varchar(20) NOT NULL
 );
 
---DROP TABLE IF EXISTS "film_genres" CASCADE;
+DROP TABLE IF EXISTS "film_genres" CASCADE;
 CREATE TABLE IF NOT EXISTS "film_genres" (
   "film_id" bigint NOT NULL,
   "genre_id" int NOT NULL
