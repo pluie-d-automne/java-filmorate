@@ -58,6 +58,10 @@ public class FilmService {
         filmStorage.unlike(filmId, userId);
     }
 
+    public void delete(Long filmId) {
+        filmStorage.delete(filmId);
+    }
+
     public Collection<Film> getTopFilms(int count) {
         Collection<Film> newFilms = new ArrayList<>();
         for (Film film : filmStorage.getTopFilms(count)) {
