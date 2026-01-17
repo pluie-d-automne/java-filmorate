@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.model;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.validators.CinemaDate;
+
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;

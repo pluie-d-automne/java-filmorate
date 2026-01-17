@@ -1,14 +1,17 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
+import java.util.List;
 
 @Validated
 @Slf4j
@@ -74,6 +77,12 @@ public class UserController {
     ) {
         log.info("User with id={} deletes user with id={} from friends", userId, friendId);
         userService.deleteFriend(userId, friendId);
+    }
+
+    @GetMapping("/{userId}/recommendations")
+    public List<Film> getRecommendations(@PathVariable @Positive(message = "The user's ID must be positive") Long userId) {
+        log.trace("Received a recommendation request for a user with ID: {}", userId);
+        return userService.getRecommendations(userId);
     }
 
 }

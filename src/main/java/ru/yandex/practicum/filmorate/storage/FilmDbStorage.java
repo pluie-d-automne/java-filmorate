@@ -30,12 +30,28 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             "VALUES (?, ?)";
     private static final String UPDATE_QUERY = "UPDATE \"films\" SET \"name\" = ?, \"description\" = ?, \"release_dt\" = ?, " +
             "\"duration\" = ?, \"rating_id\" = ? WHERE \"id\" = ?";
-    private static final String  DELETE_FILM_GENRES_BY_ID = "DELETE FROM \"film_genres\" WHERE \"film_id\" = ?";
+    private static final String DELETE_FILM_GENRES_BY_ID = "DELETE FROM \"film_genres\" WHERE \"film_id\" = ?";
     private static final String LIKE_FILM = "INSERT INTO \"film_likes\" (\"film_id\", \"user_id\") " +
             "VALUES (?, ?)";
     private static final String UNLIKE_FILM = "DELETE FROM \"film_likes\" WHERE \"film_id\" = ? AND \"user_id\" = ?";
     private static final String TOP_FILMS = "SELECT * FROM \"films_full\" WHERE \"id\" IN (SELECT \"film_id\" FROM " +
             "\"film_likes\" GROUP BY \"film_id\" ORDER BY COUNT(1) DESC LIMIT ?) ORDER BY \"likes_cnt\" DESC";
+    private static final String GET_FILMS_LIKED_BY_USER_BUT_NOT_BY_OTHER =
+            "SELECT * " +
+                    "FROM \"films_full\" f " +
+                    "WHERE EXISTS ( " +
+                    "    SELECT 1 " +
+                    "    FROM \"film_likes\" fl1 " +
+                    "    WHERE fl1.\"film_id\" = f.\"id\" " +
+                    "    AND fl1.\"user_id\" = ? " +
+                    ") " +
+                    "AND NOT EXISTS ( " +
+                    "    SELECT 1 " +
+                    "    FROM \"film_likes\" fl2 " +
+                    "    WHERE fl2.\"film_id\" = f.\"id\" " +
+                    "    AND fl2.\"user_id\" = ? " +
+                    ") " +
+                    "ORDER BY f.\"likes_cnt\" DESC";
 
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
@@ -142,7 +158,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             batchInsert(INSERT_GENRE_LINK_QUERY, new BatchPreparedStatementSetter() {
                 @Override
                 public void setValues(PreparedStatement ps, int i) throws SQLException {
-                    Genre genre =  genres.stream().toList().get(i);
+                    Genre genre = genres.stream().toList().get(i);
                     ps.setLong(1, filmId);
                     ps.setInt(2, genre.getId());
                 }
@@ -153,6 +169,27 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                 }
             });
         }
+    }
+
+    @Override
+    public List<Film> getFilmsLikedByUserButNotByOther(Long userId1, Long userId2) {
+        log.trace("Ищем фильмы, лайкнутые пользователем {} но не пользователем {}", userId1, userId2);
+
+        List<Film> films = findMany(
+                GET_FILMS_LIKED_BY_USER_BUT_NOT_BY_OTHER,
+                userId1,
+                userId2
+        );
+
+        if (films.isEmpty()) {
+            log.debug("Не найдено фильмов для рекомендации от пользователя {} к пользователю {}",
+                    userId1, userId2);
+        } else {
+            log.debug("Найдено {} фильмов для рекомендации от пользователя {} к пользователю {}",
+                    films.size(), userId1, userId2);
+        }
+
+        return films;
     }
 
 }

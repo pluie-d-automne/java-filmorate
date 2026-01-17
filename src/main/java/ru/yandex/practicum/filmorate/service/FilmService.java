@@ -7,7 +7,10 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 public class FilmService {
@@ -18,7 +21,7 @@ public class FilmService {
 
 
     public FilmService(
-            @Qualifier("filmDbStorage")FilmStorage filmStorage,
+            @Qualifier("filmDbStorage") FilmStorage filmStorage,
             GenreStorage genreStorage
     ) {
         this.filmStorage = filmStorage;
@@ -68,6 +71,6 @@ public class FilmService {
             film.setGenres(updatedGenres);
         }
 
-       return film;
+        return film;
     }
 }
