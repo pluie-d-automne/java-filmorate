@@ -33,12 +33,11 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             "VALUES (?, ?)";
     private static final String UPDATE_QUERY = "UPDATE \"films\" SET \"name\" = ?, \"description\" = ?, \"release_dt\" = ?, " +
             "\"duration\" = ?, \"rating_id\" = ? WHERE \"id\" = ?";
-    private static final String  DELETE_FILM_GENRES_BY_ID = "DELETE FROM \"film_genres\" WHERE \"film_id\" = ?";
-    private static final String  DELETE_FILM_DIRECTORS_BY_ID = "DELETE FROM \"film_directors\" WHERE \"film_id\" = ?";
+    private static final String DELETE_FILM_GENRES_BY_ID = "DELETE FROM \"film_genres\" WHERE \"film_id\" = ?";
+    private static final String DELETE_FILM_DIRECTORS_BY_ID = "DELETE FROM \"film_directors\" WHERE \"film_id\" = ?";
     private static final String LIKE_FILM = "INSERT INTO \"film_likes\" (\"film_id\", \"user_id\") " +
             "VALUES (?, ?)";
     private static final String UNLIKE_FILM = "DELETE FROM \"film_likes\" WHERE \"film_id\" = ? AND \"user_id\" = ?";
-    private static final String TOP_FILMS = "SELECT * FROM \"films_full\" ORDER BY \"likes_cnt\" DESC LIMIT ?";
     private static final String DIRECTOR_FILMS_BY_LIKES = "SELECT * FROM \"films_full\" WHERE \"id\" IN (SELECT \"film_id\" FROM " +
             "\"film_directors\" WHERE \"director_id\" = ?) ORDER BY \"likes_cnt\" DESC";
     private static final String DIRECTOR_FILMS_BY_DT = "SELECT * FROM \"films_full\" WHERE \"id\" IN (SELECT \"film_id\" FROM " +
@@ -59,6 +58,37 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                     "    AND fl2.\"user_id\" = ? " +
                     ") " +
                     "ORDER BY f.\"likes_cnt\" DESC";
+    private static final String TOP_FILMS_WITH_GENRE =
+            "SELECT * FROM \"films_full\" f " +
+                    "WHERE EXISTS ( " +
+                    "    SELECT 1 FROM \"film_genres\" fg " +
+                    "    WHERE fg.\"film_id\" = f.\"id\" " +
+                    "    AND fg.\"genre_id\" = ? " +
+                    ") " +
+                    "ORDER BY f.\"likes_cnt\" DESC " +
+                    "LIMIT ?";
+
+    private static final String TOP_FILMS_WITH_YEAR =
+            "SELECT * FROM \"films_full\" f " +
+                    "WHERE EXTRACT(YEAR FROM f.\"release_dt\") = ? " +
+                    "ORDER BY f.\"likes_cnt\" DESC " +
+                    "LIMIT ?";
+
+    private static final String TOP_FILMS_WITH_GENRE_AND_YEAR =
+            "SELECT * FROM \"films_full\" f " +
+                    "WHERE EXISTS ( " +
+                    "    SELECT 1 FROM \"film_genres\" fg " +
+                    "    WHERE fg.\"film_id\" = f.\"id\" " +
+                    "    AND fg.\"genre_id\" = ? " +
+                    ") " +
+                    "AND EXTRACT(YEAR FROM f.\"release_dt\") = ? " +
+                    "ORDER BY f.\"likes_cnt\" DESC " +
+                    "LIMIT ?";
+
+    private static final String TOP_FILMS_DEFAULT =
+            "SELECT * FROM \"films_full\" f " +
+                    "ORDER BY f.\"likes_cnt\" DESC " +
+                    "LIMIT ?";
 
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
@@ -155,11 +185,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getTopFilms(int count) {
-        return findMany(TOP_FILMS, count);
-    }
-
-    @Override
     public Collection<Film> getFilmsByDirector(Long directorId, String sortBy) {
         String query;
         if (sortBy.equals("likes")) {
@@ -177,7 +202,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             batchInsert(INSERT_GENRE_LINK_QUERY, new BatchPreparedStatementSetter() {
                 @Override
                 public void setValues(PreparedStatement ps, int i) throws SQLException {
-                    Genre genre =  genres.stream().toList().get(i);
+                    Genre genre = genres.stream().toList().get(i);
                     ps.setLong(1, filmId);
                     ps.setInt(2, genre.getId());
                 }
@@ -197,7 +222,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             batchInsert(INSERT_DIRECTORS_QUERY, new BatchPreparedStatementSetter() {
                 @Override
                 public void setValues(PreparedStatement ps, int i) throws SQLException {
-                    Director director =  directors.stream().toList().get(i);
+                    Director director = directors.stream().toList().get(i);
                     ps.setLong(1, filmId);
                     ps.setLong(2, director.getId());
                 }
@@ -229,6 +254,24 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         }
 
         return films;
+    }
+
+    @Override
+    public List<Film> getPopularFilms(Integer count, Integer genreId, Integer year) {
+        log.trace("Запрос популярных фильмов с фильтрами: count={}, genreId={}, year={}",
+                count, genreId, year);
+
+        int limit = (count != null && count > 0) ? count : 10;
+
+        if (genreId == null && year == null) {
+            return findMany(TOP_FILMS_DEFAULT, limit);
+        } else if (genreId != null && year != null) {
+            return findMany(TOP_FILMS_WITH_GENRE_AND_YEAR, genreId, year, limit);
+        } else if (genreId != null) {
+            return findMany(TOP_FILMS_WITH_GENRE, genreId, limit);
+        } else {
+            return findMany(TOP_FILMS_WITH_YEAR, year, limit);
+        }
     }
 
 }

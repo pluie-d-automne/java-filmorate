@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
+import java.util.Collection;
 
 @SpringBootTest()
 @AutoConfigureTestDatabase
@@ -88,6 +89,64 @@ class FilmControllerTests {
 
         Assertions.assertDoesNotThrow(() -> {
             filmController.create(newFilm);
+        });
+    }
+
+    @Test
+    public void getPopularFilmsWithNegativeCountThrowsException() {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
+            filmController.getPopularFilms(-5, null, null);
+        });
+    }
+
+    @Test
+    public void getPopularFilmsWithZeroCountThrowsException() {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
+            filmController.getPopularFilms(0, null, null);
+        });
+    }
+
+    @Test
+    public void getPopularFilmsWithNegativeGenreIdThrowsException() {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
+            filmController.getPopularFilms(10, -1, null);
+        });
+    }
+
+    @Test
+    public void getPopularFilmsWithZeroGenreIdThrowsException() {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
+            filmController.getPopularFilms(10, 0, null);
+        });
+    }
+
+    @Test
+    public void getPopularFilmsWithYear1894ThrowsException() {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
+            filmController.getPopularFilms(10, null, 1894);
+        });
+    }
+
+    @Test
+    public void getPopularFilmsWithYearBefore1895ThrowsException() {
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
+            filmController.getPopularFilms(10, null, 1800);
+        });
+
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
+            filmController.getPopularFilms(10, null, 0);
+        });
+
+        Assertions.assertThrows(ConstraintViolationException.class, () -> {
+            filmController.getPopularFilms(10, null, -100);
+        });
+    }
+
+    @Test
+    public void getPopularFilmsWithYear1895DoesNotThrowException() {
+        Assertions.assertDoesNotThrow(() -> {
+            Collection<Film> films = filmController.getPopularFilms(10, null, 1895);
+            Assertions.assertNotNull(films);
         });
     }
 }

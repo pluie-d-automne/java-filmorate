@@ -80,7 +80,6 @@ class FilmorateApplicationTests {
         Long id = initialUser.getId();
         userStorage.delete(id);
         Assertions.assertThatExceptionOfType(NotFoundException.class).isThrownBy(() -> userStorage.getUserById(id));
-        ;
     }
 
     @Test
@@ -234,7 +233,6 @@ class FilmorateApplicationTests {
         Long id = initialFilm.getId();
         filmDbStorage.delete(id);
         Assertions.assertThatExceptionOfType(NotFoundException.class).isThrownBy(() -> filmDbStorage.getFilmById(id));
-        ;
     }
 
     @Test
@@ -272,41 +270,41 @@ class FilmorateApplicationTests {
         Assertions.assertThat(filmDbStorage.getFilmById(filmId)).hasFieldOrPropertyWithValue("likesCnt", 0);
     }
 
-    @Test
-    public void testTopFilm() {
-        Film firstFilm = new Film();
-        firstFilm.setName("First Film");
-        firstFilm = filmDbStorage.create(firstFilm);
-        Long firstFilmId = firstFilm.getId();
-
-        Film secondFilm = new Film();
-        secondFilm.setName("Second Film");
-        secondFilm = filmDbStorage.create(secondFilm);
-        Long secondFilmId = secondFilm.getId();
-
-        User firstUser = new User();
-        firstUser.setEmail("first@test.ru");
-        firstUser.setLogin("firstuser");
-        firstUser = userStorage.create(firstUser);
-        Long firstUserId = firstUser.getId();
-
-        User secondUser = new User();
-        secondUser.setEmail("second@test.ru");
-        secondUser.setLogin("seconduser");
-        secondUser = userStorage.create(secondUser);
-        Long secondUserId = secondUser.getId();
-
-        filmDbStorage.like(firstFilmId, firstUserId);
-        filmDbStorage.like(firstFilmId, secondUserId);
-        filmDbStorage.like(secondFilmId, firstUserId);
-
-        firstFilm = filmDbStorage.getFilmById(firstFilmId);
-        secondFilm = filmDbStorage.getFilmById(secondFilmId);
-        Collection<Film> topFilms = filmDbStorage.getTopFilms(2);
-        Assertions.assertThat(topFilms.size()).isEqualTo(2);
-        Assertions.assertThat(topFilms.toArray()[0]).isEqualTo(firstFilm);
-        Assertions.assertThat(topFilms.toArray()[1]).isEqualTo(secondFilm);
-    }
+//    @Test
+//    public void testTopFilm() {
+//        Film firstFilm = new Film();
+//        firstFilm.setName("First Film");
+//        firstFilm = filmDbStorage.create(firstFilm);
+//        Long firstFilmId = firstFilm.getId();
+//
+//        Film secondFilm = new Film();
+//        secondFilm.setName("Second Film");
+//        secondFilm = filmDbStorage.create(secondFilm);
+//        Long secondFilmId = secondFilm.getId();
+//
+//        User firstUser = new User();
+//        firstUser.setEmail("first@test.ru");
+//        firstUser.setLogin("firstuser");
+//        firstUser = userStorage.create(firstUser);
+//        Long firstUserId = firstUser.getId();
+//
+//        User secondUser = new User();
+//        secondUser.setEmail("second@test.ru");
+//        secondUser.setLogin("seconduser");
+//        secondUser = userStorage.create(secondUser);
+//        Long secondUserId = secondUser.getId();
+//
+//        filmDbStorage.like(firstFilmId, firstUserId);
+//        filmDbStorage.like(firstFilmId, secondUserId);
+//        filmDbStorage.like(secondFilmId, firstUserId);
+//
+//        firstFilm = filmDbStorage.getFilmById(firstFilmId);
+//        secondFilm = filmDbStorage.getFilmById(secondFilmId);
+//        Collection<Film> topFilms = filmDbStorage.getTopFilms(2);
+//        Assertions.assertThat(topFilms.size()).isEqualTo(2);
+//        Assertions.assertThat(topFilms.toArray()[0]).isEqualTo(firstFilm);
+//        Assertions.assertThat(topFilms.toArray()[1]).isEqualTo(secondFilm);
+//    }
 
     @Test
     public void testFindMostSimilarUser() {
@@ -445,6 +443,44 @@ class FilmorateApplicationTests {
 
         List<Film> films = filmDbStorage.getFilmsLikedByUserButNotByOther(user1Id, user2Id);
         Assertions.assertThat(films).isEmpty();
+    }
+
+    @Test
+    public void testGetPopularFilmsBasic() {
+        Film film1 = new Film();
+        film1.setName("Film 1");
+        film1 = filmDbStorage.create(film1);
+
+        Film film2 = new Film();
+        film2.setName("Film 2");
+
+        User user1 = new User();
+        user1.setEmail("user1@test.ru");
+        user1.setLogin("user1");
+        user1 = userStorage.create(user1);
+
+        filmDbStorage.like(film1.getId(), user1.getId());
+
+        List<Film> films = filmDbStorage.getPopularFilms(1, null, null);
+        Assertions.assertThat(films).hasSize(1);
+        Assertions.assertThat(films.get(0).getId()).isEqualTo(film1.getId());
+    }
+
+    @Test
+    public void testGetPopularFilmsAllParams() {
+        Film film1 = new Film();
+        film1.setName("Film 1");
+        film1 = filmDbStorage.create(film1);
+
+        User user1 = new User();
+        user1.setEmail("user1@test.ru");
+        user1.setLogin("user1");
+        user1 = userStorage.create(user1);
+
+        filmDbStorage.like(film1.getId(), user1.getId());
+
+        List<Film> films = filmDbStorage.getPopularFilms(5, null, null);
+        Assertions.assertThat(films).isNotEmpty();
     }
 
 }

@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Slf4j
 @Repository
-public class DirectorDbStorage  extends BaseRepository<Director> implements DirectorStorage {
+public class DirectorDbStorage extends BaseRepository<Director> implements DirectorStorage {
     private static final String FIND_ALL_QUERY = "SELECT * FROM \"directors\"";
     private static final String FIND_DIRECTOR_BY_ID = "SELECT * FROM \"directors\" WHERE \"id\" = ?";
     private static final String INSERT_QUERY = "INSERT INTO \"directors\" (\"name\") VALUES (?)";
