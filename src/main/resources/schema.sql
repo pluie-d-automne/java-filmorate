@@ -57,6 +57,31 @@ CREATE TABLE IF NOT EXISTS "film_directors" (
   "director_id" bigint NOT NULL
 );
 
+--DROP TABLE IF EXISTS "reviews" CASCADE;
+CREATE TABLE IF NOT EXISTS "reviews" (
+    "review_id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    "content" varchar(1000) NOT NULL,
+    "is_positive" boolean NOT NULL,
+    "user_id" bigint NOT NULL,
+    "film_id" bigint NOT NULL,
+    "useful" int NOT NULL DEFAULT 0
+);
+
+--DROP TABLE IF EXISTS "review_reactions" CASCADE;
+CREATE TABLE IF NOT EXISTS "review_reactions" (
+    "review_id" bigint NOT NULL,
+    "user_id" bigint NOT NULL,
+    "is_like" boolean NOT NULL
+);
+
+ALTER TABLE "reviews" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
+
+ALTER TABLE "reviews" ADD FOREIGN KEY ("film_id") REFERENCES "films" ("id") ON DELETE CASCADE;
+
+ALTER TABLE "review_reactions" ADD FOREIGN KEY ("review_id") REFERENCES "reviews" ("review_id") ON DELETE CASCADE;
+
+ALTER TABLE "review_reactions" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
+
 ALTER TABLE "film_genres" ADD FOREIGN KEY ("film_id") REFERENCES "films" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "film_genres" ADD FOREIGN KEY ("genre_id") REFERENCES "genres" ("id");
@@ -76,6 +101,16 @@ ALTER TABLE "film_directors" ADD FOREIGN KEY ("film_id") REFERENCES "films" ("id
 ALTER TABLE "film_directors" ADD FOREIGN KEY ("director_id") REFERENCES "directors" ("id") ON DELETE CASCADE;
 
 CREATE UNIQUE INDEX IF NOT EXISTS unique_film_directors ON "film_directors" ("film_id", "director_id");
+
+CREATE UNIQUE INDEX IF NOT EXISTS unique_review_reaction
+ON "review_reactions" ("review_id", "user_id");
+
+CREATE UNIQUE INDEX IF NOT EXISTS unique_review_film_user
+ON "reviews" ("film_id", "user_id");
+
+CREATE INDEX IF NOT EXISTS idx_reviews_film ON "reviews" ("film_id");
+
+CREATE INDEX IF NOT EXISTS idx_reviews_user ON "reviews" ("user_id");
 
 CREATE UNIQUE INDEX IF NOT EXISTS unique_friendship ON "friendships" ("user_id", "friend_id");
 
