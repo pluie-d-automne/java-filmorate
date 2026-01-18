@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -29,11 +31,6 @@ public class FilmController {
     @GetMapping("/{filmId}")
     public Film getFilmById(@PathVariable long filmId) {
         return filmService.getFilmById(filmId);
-    }
-
-    @GetMapping("/popular")
-    public Collection<Film> getTopFilms(@RequestParam(defaultValue = "10") String count) {
-        return filmService.getTopFilms(Integer.parseInt(count));
     }
 
     @GetMapping("/director/{directorId}")
@@ -81,5 +78,19 @@ public class FilmController {
         filmService.delete(filmId);
     }
 
+    @GetMapping("/popular")
+    public Collection<Film> getPopularFilms(
+            @RequestParam(required = false, defaultValue = "10")
+            @Positive(message = "Parameter 'count' must be positive")
+            Integer count,
+            @RequestParam(required = false)
+            @Positive(message = "Parameter 'genreId' must be positive")
+            Integer genreId,
+            @RequestParam(required = false)
+            @Min(value = 1895, message = "Year must be at least 1895")
+            Integer year) {
+
+        return filmService.getPopularFilms(count, genreId, year);
+    }
 
 }

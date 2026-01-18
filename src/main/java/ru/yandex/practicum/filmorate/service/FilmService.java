@@ -24,7 +24,7 @@ public class FilmService {
     private final DirectorStorage directorStorage;
 
     public FilmService(
-            @Qualifier("filmDbStorage")FilmStorage filmStorage,
+            @Qualifier("filmDbStorage") FilmStorage filmStorage,
             GenreStorage genreStorage,
             DirectorStorage directorStorage
     ) {
@@ -65,14 +65,6 @@ public class FilmService {
         filmStorage.delete(filmId);
     }
 
-    public Collection<Film> getTopFilms(int count) {
-        Collection<Film> newFilms = new ArrayList<>();
-        for (Film film : filmStorage.getTopFilms(count)) {
-            newFilms.add(updateDirectors(updateGenres(film)));
-        }
-        return newFilms;
-    }
-
     public Collection<Film> getFilmsByDirector(Long directorId, String sortBy) {
         Collection<Film> newFilms = new ArrayList<>();
         for (Film film : filmStorage.getFilmsByDirector(directorId, sortBy)) {
@@ -92,11 +84,11 @@ public class FilmService {
             film.setGenres(updatedGenres);
         }
 
-       return film;
+        return film;
     }
 
     private Film updateDirectors(Film film) {
-        if (film.getDirectors() != null && ! film.getDirectors().isEmpty()) {
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
             Collection<Long> directorIds = film.getDirectors().stream().map(Director::getId).toList();
             List<Director> updatedDirector = directorStorage.getAllDirectors()
                     .stream()
@@ -107,5 +99,15 @@ public class FilmService {
         }
 
         return film;
+    }
+
+    public Collection<Film> getPopularFilms(Integer count, Integer genreId, Integer year) {
+        List<Film> films = filmStorage.getPopularFilms(count, genreId, year);
+
+        Collection<Film> newFilms = new ArrayList<>();
+        for (Film film : films) {
+            newFilms.add(updateDirectors(updateGenres(film)));
+        }
+        return newFilms;
     }
 }
