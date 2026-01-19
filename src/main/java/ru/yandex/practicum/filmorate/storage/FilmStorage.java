@@ -25,4 +25,6 @@ public interface FilmStorage {
     Collection<Film> getFilmsByDirector(Long directorId, String sortBy);
 
     List<Film> getFilmsLikedByUserButNotByOther(Long sourceUserId, Long targetUserId);
+
+    List<Film> getCommonFilms(long userId, long friendId);
 }

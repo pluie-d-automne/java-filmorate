@@ -90,6 +90,13 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                     "ORDER BY f.\"likes_cnt\" DESC " +
                     "LIMIT ?";
 
+    private static final String GET_COMMON_FILMS =
+            "SELECT ff.* " +
+                    "FROM \"films_full\" ff " +
+                    "JOIN \"film_likes\" fl1 ON ff.\"id\" = fl1.\"film_id\" AND fl1.\"user_id\" = ? " +
+                    "JOIN \"film_likes\" fl2 ON ff.\"id\" = fl2.\"film_id\" AND fl2.\"user_id\" = ? " +
+                    "ORDER BY ff.\"likes_cnt\" DESC;";
+
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -253,6 +260,18 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                     films.size(), userId1, userId2);
         }
 
+        return films;
+    }
+
+    @Override
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        log.trace("Запрос на поиск общих фильмов у пользователей {} и {}", userId, friendId);
+        List<Film> films = findMany(GET_COMMON_FILMS, userId, friendId);
+        if (films.isEmpty()) {
+            log.debug("Не найдено общих фильмов у пользоваталей {} и {}", userId, friendId);
+        } else {
+            log.debug("Найдено {} общих фильмов у пользователей {} и {}", films.size(), userId, friendId);
+        }
         return films;
     }
 
