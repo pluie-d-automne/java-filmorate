@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Marker;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 
 @Validated
 @Slf4j
@@ -38,6 +39,12 @@ public class FilmController {
             @PathVariable long directorId,
             @RequestParam(defaultValue = "likes") String sortBy) {
         return filmService.getFilmsByDirector(directorId, sortBy);
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam("userId") long userId,
+                                     @RequestParam("friendId") long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
     }
 
     @PostMapping
