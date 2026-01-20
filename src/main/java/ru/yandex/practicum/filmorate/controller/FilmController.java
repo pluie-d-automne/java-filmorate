@@ -42,6 +42,12 @@ public class FilmController {
         return filmService.getFilmsByDirector(directorId, sortBy);
     }
 
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam("userId") long userId,
+                                     @RequestParam("friendId") long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
     @PostMapping
     @Validated({Marker.OnCreate.class})
     public Film create(@Valid @RequestBody Film newFilm) {

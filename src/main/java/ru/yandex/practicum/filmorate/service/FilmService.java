@@ -119,5 +119,7 @@ public class FilmService {
             newFilms.add(updateDirectors(updateGenres(film)));
         }
         return newFilms;
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 }
