@@ -10,7 +10,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 @Validated
 @Slf4j
@@ -91,6 +93,17 @@ public class FilmController {
             Integer year) {
 
         return filmService.getPopularFilms(count, genreId, year);
+    }
+
+    @GetMapping("/search")
+    public Collection<Film> searchFilms(
+            @RequestParam String query,
+            @RequestParam String by) {
+
+        List<String> searchBy = Arrays.asList(by.split(","));
+        log.info("Поиск фильмов: query={}, by={}", query, by);
+
+        return filmService.searchFilms(query, searchBy);
     }
 
 }

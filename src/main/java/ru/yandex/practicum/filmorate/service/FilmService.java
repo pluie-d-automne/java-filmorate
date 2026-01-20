@@ -110,4 +110,14 @@ public class FilmService {
         }
         return newFilms;
     }
+
+    public Collection<Film> searchFilms(String query, List<String> searchBy) {
+        List<Film> films = filmStorage.searchFilms(query, searchBy);
+
+        Collection<Film> newFilms = new ArrayList<>();
+        for (Film film : films) {
+            newFilms.add(updateDirectors(updateGenres(film)));
+        }
+        return newFilms;
+    }
 }

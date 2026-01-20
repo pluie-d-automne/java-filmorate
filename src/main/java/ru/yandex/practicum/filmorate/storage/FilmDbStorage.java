@@ -90,6 +90,39 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                     "ORDER BY f.\"likes_cnt\" DESC " +
                     "LIMIT ?";
 
+    private static final String SEARCH_FILMS_BY_TITLE =
+            "SELECT * FROM \"films_full\" WHERE LOWER(\"name\") LIKE LOWER(?) ORDER BY \"likes_cnt\" DESC";
+
+    private static final String SEARCH_FILMS_BY_DIRECTOR =
+            "SELECT f.* FROM \"films_full\" f " +
+                    "WHERE EXISTS (SELECT 1 FROM \"film_directors\" fd " +
+                    "JOIN \"directors\" d ON fd.\"director_id\" = d.\"id\" " +
+                    "WHERE fd.\"film_id\" = f.\"id\" AND LOWER(d.\"name\") LIKE LOWER(?)) " +
+                    "ORDER BY f.\"likes_cnt\" DESC";
+
+    private static final String SEARCH_FILMS_BY_TITLE_OR_DIRECTOR =
+            "SELECT f.* FROM \"films_full\" f " +
+                    "WHERE LOWER(f.\"name\") LIKE LOWER(?) " +
+                    "OR EXISTS (SELECT 1 FROM \"film_directors\" fd " +
+                    "JOIN \"directors\" d ON fd.\"director_id\" = d.\"id\" " +
+                    "WHERE fd.\"film_id\" = f.\"id\" AND LOWER(d.\"name\") LIKE LOWER(?)) " +
+                    "ORDER BY f.\"likes_cnt\" DESC";
+
+    @Override
+    public List<Film> searchFilms(String query, List<String> searchBy) {
+        log.trace("Поиск фильмов: query={}, searchBy={}", query, searchBy);
+
+        String searchQuery = "%" + query + "%";
+
+        if (searchBy.contains("title") && searchBy.contains("director")) {
+            return findMany(SEARCH_FILMS_BY_TITLE_OR_DIRECTOR, searchQuery, searchQuery);
+        } else if (searchBy.contains("director")) {
+            return findMany(SEARCH_FILMS_BY_DIRECTOR, searchQuery);
+        } else {
+            return findMany(SEARCH_FILMS_BY_TITLE, searchQuery);
+        }
+    }
+
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
