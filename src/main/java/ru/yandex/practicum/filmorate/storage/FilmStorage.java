@@ -27,4 +27,6 @@ public interface FilmStorage {
     List<Film> getFilmsLikedByUserButNotByOther(Long sourceUserId, Long targetUserId);
 
     List<Film> getCommonFilms(long userId, long friendId);
+
+    List<Film> searchFilms(String query, List<String> searchBy);
 }
