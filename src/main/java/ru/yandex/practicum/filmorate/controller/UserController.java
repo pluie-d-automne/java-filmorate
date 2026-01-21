@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Marker;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.UserFeedEvent;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
@@ -91,4 +92,9 @@ public class UserController {
         return userService.getRecommendations(userId);
     }
 
+    @GetMapping("/{userId}/feed")
+    public Collection<UserFeedEvent> getUserFeed(@PathVariable long userId) {
+        log.info("Получение ленты событий для пользователя с id={}", userId);
+        return userService.getUserFeed(userId);
+    }
 }

@@ -1,60 +1,74 @@
-DROP TABLE IF EXISTS  "users" CASCADE;
-CREATE TABLE IF NOT EXISTS "users" (
-  "id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  "email" varchar NOT NULL,
-  "login" varchar NOT NULL,
-  "name" varchar NOT NULL,
-  "birthday" date
-);
-
+DROP TABLE IF EXISTS "user_feeds" CASCADE;
+DROP TABLE IF EXISTS "review_reactions" CASCADE;
+DROP TABLE IF EXISTS "reviews" CASCADE;
+DROP TABLE IF EXISTS "film_directors" CASCADE;
+DROP TABLE IF EXISTS "film_likes" CASCADE;
+DROP TABLE IF EXISTS "friendships" CASCADE;
+DROP TABLE IF EXISTS "film_genres" CASCADE;
 DROP TABLE IF EXISTS "films" CASCADE;
-CREATE TABLE IF NOT EXISTS "films" (
-  "id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  "name" varchar NOT NULL,
-  "description" varchar(200),
-  "release_dt" date,
-  "duration" int,
-  "rating_id" smallint
-);
+DROP TABLE IF EXISTS "users" CASCADE;
+DROP TABLE IF EXISTS "directors" CASCADE;
+DROP TABLE IF EXISTS "genres" CASCADE;
+DROP TABLE IF EXISTS "ratings" CASCADE;
 
 CREATE TABLE IF NOT EXISTS "ratings" (
-  "id" smallint PRIMARY KEY,
-  "name" varchar(5) NOT NULL
-);
+    "id" smallint PRIMARY KEY,
+    "name" varchar(5) NOT NULL
+    );
 
 CREATE TABLE IF NOT EXISTS "genres" (
-  "id" int PRIMARY KEY,
-  "name" varchar(20) NOT NULL
-);
-
-DROP TABLE IF EXISTS "film_genres" CASCADE;
-CREATE TABLE IF NOT EXISTS "film_genres" (
-  "film_id" bigint NOT NULL,
-  "genre_id" int NOT NULL
-);
-
-DROP TABLE IF EXISTS  "film_likes" CASCADE;
-CREATE TABLE IF NOT EXISTS "film_likes" (
-  "film_id" bigint NOT NULL,
-  "user_id" bigint NOT NULL
-);
-
-DROP TABLE IF EXISTS  "friendships" CASCADE;
-CREATE TABLE IF NOT EXISTS "friendships" (
-  "user_id" bigint NOT NULL,
-  "friend_id" bigint NOT NULL
-);
+    "id" int PRIMARY KEY,
+    "name" varchar(20) NOT NULL
+    );
 
 --DROP TABLE IF EXISTS  "directors" CASCADE;
 CREATE TABLE IF NOT EXISTS "directors" (
-  "id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  "name" varchar NOT NULL
+    "id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    "name" varchar NOT NULL
+);
+
+
+--DROP TABLE IF EXISTS  "users" CASCADE;
+CREATE TABLE IF NOT EXISTS "users" (
+    "id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    "email" varchar NOT NULL,
+    "login" varchar NOT NULL,
+    "name" varchar NOT NULL,
+    "birthday" date
+);
+
+--DROP TABLE IF EXISTS "films" CASCADE;
+CREATE TABLE IF NOT EXISTS "films" (
+    "id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    "name" varchar NOT NULL,
+    "description" varchar(200),
+    "release_dt" date,
+    "duration" int,
+    "rating_id" smallint
+    );
+
+--DROP TABLE IF EXISTS "film_genres" CASCADE;
+CREATE TABLE IF NOT EXISTS "film_genres" (
+    "film_id" bigint NOT NULL,
+    "genre_id" int NOT NULL
+);
+
+--DROP TABLE IF EXISTS  "film_likes" CASCADE;
+CREATE TABLE IF NOT EXISTS "film_likes" (
+    "film_id" bigint NOT NULL,
+    "user_id" bigint NOT NULL
+);
+
+--DROP TABLE IF EXISTS  "friendships" CASCADE;
+CREATE TABLE IF NOT EXISTS "friendships" (
+    "user_id" bigint NOT NULL,
+    "friend_id" bigint NOT NULL
 );
 
 --DROP TABLE IF EXISTS  "film_directors" CASCADE;
 CREATE TABLE IF NOT EXISTS "film_directors" (
-  "film_id" bigint NOT NULL,
-  "director_id" bigint NOT NULL
+    "film_id" bigint NOT NULL,
+    "director_id" bigint NOT NULL
 );
 
 --DROP TABLE IF EXISTS "reviews" CASCADE;
@@ -73,6 +87,18 @@ CREATE TABLE IF NOT EXISTS "review_reactions" (
     "user_id" bigint NOT NULL,
     "is_like" boolean NOT NULL
 );
+
+--DROP TABLE IF EXISTS "user_feeds" CASCADE;
+CREATE TABLE IF NOT EXISTS "user_feeds" (
+    "event_id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    "timestamp" bigint NOT NULL,
+    "user_id" bigint NOT NULL,
+    "event_type" varchar(10) NOT NULL,
+    "operation" varchar(10) NOT NULL,
+    "entity_id" bigint NOT NULL
+    );
+
+ALTER TABLE "user_feeds" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "reviews" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
 
@@ -151,3 +177,6 @@ LEFT JOIN (SELECT "film_id", ARRAY_AGG("genre_id" ORDER BY "genre_id") AS "genre
 LEFT JOIN (SELECT "film_id", COUNT("user_id") AS "likes_cnt"
 	FROM "film_likes"
 	GROUP BY "film_id" ) AS "likes" ON "likes"."film_id" = "films"."id";
+
+CREATE INDEX IF NOT EXISTS idx_user_feeds_user_id ON "user_feeds" ("user_id");
+CREATE INDEX IF NOT EXISTS idx_user_feeds_timestamp ON "user_feeds" ("timestamp");
