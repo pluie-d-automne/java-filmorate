@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.UserFeedEvent;
+import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -17,12 +19,15 @@ public class UserService {
     private final UserStorage userStorage;
     @Qualifier("filmDbStorage")
     FilmStorage filmStorage;
+    private final FeedStorage feedStorage;
 
     public UserService(
             @Qualifier("userDbStorage") UserStorage userStorage,
-            @Qualifier("filmDbStorage") FilmStorage filmStorage) {
+            @Qualifier("filmDbStorage") FilmStorage filmStorage,
+            FeedStorage feedStorage) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.feedStorage = feedStorage;
     }
 
     public Collection<User> getAllUsers() {
@@ -43,10 +48,24 @@ public class UserService {
 
     public void addFriend(Long userId, Long friendId) {
         userStorage.addFriend(userId, friendId);
+
+        feedStorage.addEvent(UserFeedEvent.builder()
+                .userId(userId)
+                .eventType(UserFeedEvent.EventType.FRIEND)
+                .operation(UserFeedEvent.OperationType.ADD)
+                .entityId(friendId)
+                .build());
     }
 
     public void deleteFriend(Long userId, Long friendId) {
         userStorage.deleteFriend(userId, friendId);
+
+        feedStorage.addEvent(UserFeedEvent.builder()
+                .userId(userId)
+                .eventType(UserFeedEvent.EventType.FRIEND)
+                .operation(UserFeedEvent.OperationType.REMOVE)
+                .entityId(friendId)
+                .build());
     }
 
     public Collection<User> getUserFriends(Long userId) {
@@ -73,4 +92,8 @@ public class UserService {
         return filmStorage.getFilmsLikedByUserButNotByOther(similarUserId, userId);
     }
 
+    public Collection<UserFeedEvent> getUserFeed(Long userId) {
+        getUserById(userId);
+        return feedStorage.getUserFeed(userId);
+    }
 }
