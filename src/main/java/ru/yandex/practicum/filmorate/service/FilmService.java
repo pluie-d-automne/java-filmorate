@@ -2,18 +2,12 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.UserFeedEvent;
-import ru.yandex.practicum.filmorate.storage.DirectorStorage;
-import ru.yandex.practicum.filmorate.storage.FeedStorage;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -27,13 +21,17 @@ public class FilmService {
 
     private final FeedStorage feedStorage;
 
+    private final UserStorage userStorage;
+
     public FilmService(
             @Qualifier("filmDbStorage") FilmStorage filmStorage,
+            @Qualifier("userDbStorage") UserStorage userStorage,
             GenreStorage genreStorage,
             DirectorStorage directorStorage,
             FeedStorage feedStorage
     ) {
         this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
         this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
         this.feedStorage = feedStorage;
@@ -42,13 +40,13 @@ public class FilmService {
     public Collection<Film> getAllFilms() {
         Collection<Film> newFilms = new ArrayList<>();
         for (Film film : filmStorage.getAllFilms()) {
-            newFilms.add(updateDirectors(updateGenres(film)));
+            newFilms.add(directorStorage.updateDirectors(genreStorage.updateGenres(film)));
         }
         return newFilms;
     }
 
     public Film getFilmById(long filmId) {
-        return updateGenres(filmStorage.getFilmById(filmId));
+        return directorStorage.updateDirectors(genreStorage.updateGenres(filmStorage.getFilmById(filmId)));
     }
 
     public Film create(Film newFilm) {
@@ -60,6 +58,8 @@ public class FilmService {
     }
 
     public void like(Long filmId, Long userId) {
+        userStorage.getUserById(userId);
+        filmStorage.getFilmById(filmId);
         filmStorage.like(filmId, userId);
 
         feedStorage.addEvent(UserFeedEvent.builder()
@@ -71,6 +71,8 @@ public class FilmService {
     }
 
     public void unlike(Long filmId, Long userId) {
+        userStorage.getUserById(userId);
+        filmStorage.getFilmById(filmId);
         filmStorage.unlike(filmId, userId);
 
         feedStorage.addEvent(UserFeedEvent.builder()
@@ -88,37 +90,9 @@ public class FilmService {
     public Collection<Film> getFilmsByDirector(Long directorId, String sortBy) {
         Collection<Film> newFilms = new ArrayList<>();
         for (Film film : filmStorage.getFilmsByDirector(directorId, sortBy)) {
-            newFilms.add(updateDirectors(updateGenres(film)));
+            newFilms.add(directorStorage.updateDirectors(genreStorage.updateGenres(film)));
         }
         return newFilms;
-    }
-
-    private Film updateGenres(Film film) {
-        if (film.getGenres() != null) {
-            Collection<Integer> genreIds = film.getGenres().stream().map(Genre::getId).toList();
-            List<Genre> updatedGenres = genreStorage.getAllGenre()
-                    .stream()
-                    .filter(genre -> genreIds.contains(genre.getId()))
-                    .sorted(Comparator.comparing(Genre::getId))
-                    .toList();
-            film.setGenres(updatedGenres);
-        }
-
-        return film;
-    }
-
-    private Film updateDirectors(Film film) {
-        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
-            Collection<Long> directorIds = film.getDirectors().stream().map(Director::getId).toList();
-            List<Director> updatedDirector = directorStorage.getAllDirectors()
-                    .stream()
-                    .filter(director -> directorIds.contains(director.getId()))
-                    .sorted(Comparator.comparing(Director::getId))
-                    .toList();
-            film.setDirectors(updatedDirector);
-        }
-
-        return film;
     }
 
     public Collection<Film> getPopularFilms(Integer count, Integer genreId, Integer year) {
@@ -126,7 +100,7 @@ public class FilmService {
 
         Collection<Film> newFilms = new ArrayList<>();
         for (Film film : films) {
-            newFilms.add(updateDirectors(updateGenres(film)));
+            newFilms.add(directorStorage.updateDirectors(genreStorage.updateGenres(film)));
         }
         return newFilms;
     }
@@ -140,7 +114,7 @@ public class FilmService {
 
         Collection<Film> newFilms = new ArrayList<>();
         for (Film film : films) {
-            newFilms.add(updateDirectors(updateGenres(film)));
+            newFilms.add(directorStorage.updateDirectors(genreStorage.updateGenres(film)));
         }
         return newFilms;
     }

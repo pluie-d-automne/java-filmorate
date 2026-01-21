@@ -5,10 +5,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Repository
@@ -34,6 +34,23 @@ public class GenreDbStorage extends BaseRepository<Genre> implements GenreStorag
         } else {
             throw new NotFoundException("Жанр с id=" + genreId + " не найден.");
         }
+    }
+
+    @Override
+    public Film updateGenres(Film film) {
+        List<Genre> updatedGenres = new ArrayList<>();
+        if (film.getGenres() != null) {
+            Collection<Integer> genreIds = film.getGenres().stream().map(Genre::getId).toList();
+            updatedGenres = getAllGenre()
+                    .stream()
+                    .filter(genre -> genreIds.contains(genre.getId()))
+                    .sorted(Comparator.comparing(Genre::getId))
+                    .toList();
+
+        }
+
+        film.setGenres(updatedGenres);
+        return film;
     }
 
 }

@@ -180,7 +180,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             );
             updateFilmGenres(film.getGenres(), filmId);
             updateFilmDirectors(film.getDirectors(), filmId);
-            return film;
+            return getFilmById(filmId);
         } else {
             throw new NotFoundException("Фильм с id=" + film.getId() + " не найден.");
         }
@@ -217,13 +217,18 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         } else {
             query = DIRECTOR_FILMS_BY_DT;
         }
-        return findMany(query, directorId);
+        Collection<Film> filmsFound = findMany(query, directorId);
+        if (!filmsFound.isEmpty()) {
+            return filmsFound;
+        } else {
+            throw new NotFoundException("Фильмов режиссера с id=" + directorId + " не найдено.");
+        }
     }
 
     void updateFilmGenres(Collection<Genre> fullGenres, Long filmId) {
+        delete(DELETE_FILM_GENRES_BY_ID, filmId);
         if (fullGenres != null && !fullGenres.isEmpty()) {
             Set<Genre> genres = new HashSet<>(fullGenres);
-            delete(DELETE_FILM_GENRES_BY_ID, filmId);
             batchInsert(INSERT_GENRE_LINK_QUERY, new BatchPreparedStatementSetter() {
                 @Override
                 public void setValues(PreparedStatement ps, int i) throws SQLException {
@@ -241,9 +246,9 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     }
 
     void updateFilmDirectors(Collection<Director> allDirectors, Long filmId) {
+        delete(DELETE_FILM_DIRECTORS_BY_ID, filmId);
         if (allDirectors != null && !allDirectors.isEmpty()) {
             Set<Director> directors = new HashSet<>(allDirectors);
-            delete(DELETE_FILM_DIRECTORS_BY_ID, filmId);
             batchInsert(INSERT_DIRECTORS_QUERY, new BatchPreparedStatementSetter() {
                 @Override
                 public void setValues(PreparedStatement ps, int i) throws SQLException {
@@ -262,7 +267,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     @Override
     public List<Film> getFilmsLikedByUserButNotByOther(Long userId1, Long userId2) {
-        log.trace("Ищем фильмы, лайкнутые пользователем {} но не пользователем {}", userId1, userId2);
+        log.trace("Ищем фильмы, лайкнутые пользователем {}, но не лайкнутые пользователем {}", userId1, userId2);
 
         List<Film> films = findMany(
                 GET_FILMS_LIKED_BY_USER_BUT_NOT_BY_OTHER,
