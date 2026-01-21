@@ -16,8 +16,11 @@ public class FeedDbStorage implements FeedStorage {
 
     private final JdbcTemplate jdbc;
 
+    /*static final String GET_USER_FEED_QUERY =
+            "SELECT * FROM \"user_feeds\" WHERE \"user_id\" = ? ORDER BY \"timestamp\"";*/
+
     static final String GET_USER_FEED_QUERY =
-            "SELECT * FROM \"user_feeds\" WHERE \"user_id\" = ? ORDER BY \"timestamp\"";
+            "SELECT * FROM \"user_feeds\" WHERE \"user_id\" = ? ORDER BY \"event_id\"";
 
     // лента событий друзей пользователя
     //         "SELECT uf.* " +

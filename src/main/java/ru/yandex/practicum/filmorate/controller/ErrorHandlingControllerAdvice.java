@@ -19,14 +19,14 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class ErrorHandlingControllerAdvice {
 
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleDataIntegrityViolationException(final DataIntegrityViolationException e) {
         log.warn("Data integrity violated: {}", e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFound(final NotFoundException e) {
         log.warn("Not found error: {}", e.getMessage());
@@ -35,16 +35,9 @@ public class ErrorHandlingControllerAdvice {
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ValidationErrorResponse onConstraintValidationException(
-            ConstraintViolationException e
-    ) {
+    public ValidationErrorResponse onConstraintValidationException(ConstraintViolationException e) {
         final List<Violation> violations = e.getConstraintViolations().stream()
-                .map(
-                        violation -> new Violation(
-                                violation.getPropertyPath().toString(),
-                                violation.getMessage()
-                        )
-                )
+                .map(v -> new Violation(v.getPropertyPath().toString(), v.getMessage()))
                 .collect(Collectors.toList());
         log.warn("Constraint violations found: {}", violations);
         return new ValidationErrorResponse(violations);
@@ -52,9 +45,7 @@ public class ErrorHandlingControllerAdvice {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ValidationErrorResponse onMethodArgumentNotValidException(
-            MethodArgumentNotValidException e
-    ) {
+    public ValidationErrorResponse onMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         final List<Violation> violations = e.getBindingResult().getFieldErrors().stream()
                 .map(error -> new Violation(error.getField(), error.getDefaultMessage()))
                 .collect(Collectors.toList());
@@ -68,5 +59,4 @@ public class ErrorHandlingControllerAdvice {
         log.warn("Internal server error: {}", e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
-
 }

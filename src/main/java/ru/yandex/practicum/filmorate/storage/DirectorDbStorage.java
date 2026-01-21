@@ -24,7 +24,7 @@ public class DirectorDbStorage extends BaseRepository<Director> implements Direc
         super(jdbc, mapper);
     }
 
-    @Override
+    /*@Override
     public Director create(Director director) {
         insert(
                 INSERT_QUERY,
@@ -36,7 +36,7 @@ public class DirectorDbStorage extends BaseRepository<Director> implements Direc
             director.setId(id);
         }
         return director;
-    }
+    }*/
 
     @Override
     public Director update(Director director) {
@@ -85,4 +85,17 @@ public class DirectorDbStorage extends BaseRepository<Director> implements Direc
         log.trace("Получаем список всех режиссёров");
         return findMany(FIND_ALL_QUERY);
     }
+
+    public Director create(Director director) {
+        director.setId(null);
+
+        insert(INSERT_QUERY, director.getName());
+
+        Optional<Director> createdDirector = findOne(FIND_DIRECTOR_BY_NAME + " ORDER BY \"id\" DESC LIMIT 1", director.getName());
+        if (createdDirector.isPresent()) {
+            director.setId(createdDirector.get().getId());
+        }
+        return director;
+    }
+
 }

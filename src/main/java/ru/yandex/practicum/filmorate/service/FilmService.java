@@ -6,10 +6,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.UserFeedEvent;
-import ru.yandex.practicum.filmorate.storage.DirectorStorage;
-import ru.yandex.practicum.filmorate.storage.FeedStorage;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,17 +24,23 @@ public class FilmService {
 
     private final FeedStorage feedStorage;
 
+    private final UserStorage userStorage;
+
+
     public FilmService(
             @Qualifier("filmDbStorage") FilmStorage filmStorage,
             GenreStorage genreStorage,
             DirectorStorage directorStorage,
-            FeedStorage feedStorage
+            FeedStorage feedStorage,
+            @Qualifier("userDbStorage") UserStorage userStorage
     ) {
         this.filmStorage = filmStorage;
         this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
         this.feedStorage = feedStorage;
+        this.userStorage = userStorage;
     }
+
 
     public Collection<Film> getAllFilms() {
         Collection<Film> newFilms = new ArrayList<>();
@@ -47,7 +50,7 @@ public class FilmService {
         return newFilms;
     }
 
-    public Film getFilmById(long filmId) {
+    /*public Film getFilmById(long filmId) {
         return updateGenres(filmStorage.getFilmById(filmId));
     }
 
@@ -57,9 +60,9 @@ public class FilmService {
 
     public Film update(Film newFilm) {
         return filmStorage.update(newFilm);
-    }
+    }*/
 
-    public void like(Long filmId, Long userId) {
+    /*public void like(Long filmId, Long userId) {
         filmStorage.like(filmId, userId);
 
         feedStorage.addEvent(UserFeedEvent.builder()
@@ -79,19 +82,48 @@ public class FilmService {
                 .operation(UserFeedEvent.OperationType.REMOVE)
                 .entityId(filmId)
                 .build());
+    }*/
+
+    public void like(Long filmId, Long userId) {
+        filmStorage.getFilmById(filmId);
+        userStorage.getUserById(userId);
+
+        filmStorage.like(filmId, userId);
+
+        feedStorage.addEvent(UserFeedEvent.builder()
+                .userId(userId)
+                .eventType(UserFeedEvent.EventType.LIKE)
+                .operation(UserFeedEvent.OperationType.ADD)
+                .entityId(filmId)
+                .build());
     }
+
+    public void unlike(Long filmId, Long userId) {
+        filmStorage.getFilmById(filmId);
+        userStorage.getUserById(userId);
+
+        filmStorage.unlike(filmId, userId);
+
+        feedStorage.addEvent(UserFeedEvent.builder()
+                .userId(userId)
+                .eventType(UserFeedEvent.EventType.LIKE)
+                .operation(UserFeedEvent.OperationType.REMOVE)
+                .entityId(filmId)
+                .build());
+    }
+
 
     public void delete(Long filmId) {
         filmStorage.delete(filmId);
     }
 
-    public Collection<Film> getFilmsByDirector(Long directorId, String sortBy) {
+    /*public Collection<Film> getFilmsByDirector(Long directorId, String sortBy) {
         Collection<Film> newFilms = new ArrayList<>();
         for (Film film : filmStorage.getFilmsByDirector(directorId, sortBy)) {
             newFilms.add(updateDirectors(updateGenres(film)));
         }
         return newFilms;
-    }
+    }*/
 
     private Film updateGenres(Film film) {
         if (film.getGenres() != null) {
@@ -144,4 +176,29 @@ public class FilmService {
         }
         return newFilms;
     }
+
+    public Film getFilmById(long filmId) {
+        return updateDirectors(updateGenres(filmStorage.getFilmById(filmId)));
+    }
+
+    public Film create(Film newFilm) {
+        Film created = filmStorage.create(newFilm);
+        return updateDirectors(updateGenres(filmStorage.getFilmById(created.getId())));
+    }
+
+    public Film update(Film newFilm) {
+        Film updated = filmStorage.update(newFilm);
+        return updateDirectors(updateGenres(filmStorage.getFilmById(updated.getId())));
+    }
+
+    public Collection<Film> getFilmsByDirector(Long directorId, String sortBy) {
+        directorStorage.getDirectorById(directorId);
+
+        Collection<Film> newFilms = new ArrayList<>();
+        for (Film film : filmStorage.getFilmsByDirector(directorId, sortBy)) {
+            newFilms.add(updateDirectors(updateGenres(film)));
+        }
+        return newFilms;
+    }
+
 }

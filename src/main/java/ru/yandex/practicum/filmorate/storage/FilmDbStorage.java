@@ -220,7 +220,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         return findMany(query, directorId);
     }
 
-    void updateFilmGenres(Collection<Genre> fullGenres, Long filmId) {
+    /*void updateFilmGenres(Collection<Genre> fullGenres, Long filmId) {
         if (fullGenres != null && !fullGenres.isEmpty()) {
             Set<Genre> genres = new HashSet<>(fullGenres);
             delete(DELETE_FILM_GENRES_BY_ID, filmId);
@@ -258,7 +258,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                 }
             });
         }
-    }
+    }*/
 
     @Override
     public List<Film> getFilmsLikedByUserButNotByOther(Long userId1, Long userId2) {
@@ -325,5 +325,76 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             return findMany(SEARCH_FILMS_BY_TITLE, searchQuery);
         }
     }
+
+    void updateFilmGenres(Collection<Genre> fullGenres, Long filmId) {
+        delete(DELETE_FILM_GENRES_BY_ID, filmId);
+
+        if (fullGenres == null || fullGenres.isEmpty()) {
+            return;
+        }
+
+        List<Genre> genres = fullGenres.stream()
+                .filter(Objects::nonNull)
+                .filter(g -> g.getId() != null)
+                .collect(java.util.stream.Collectors.toMap(
+                        Genre::getId,
+                        g -> g,
+                        (a, b) -> a
+                ))
+                .values()
+                .stream()
+                .sorted(Comparator.comparing(Genre::getId))
+                .toList();
+
+        batchInsert(INSERT_GENRE_LINK_QUERY, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                Genre genre = genres.get(i);
+                ps.setLong(1, filmId);
+                ps.setInt(2, genre.getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return genres.size();
+            }
+        });
+    }
+
+    void updateFilmDirectors(Collection<Director> allDirectors, Long filmId) {
+        delete(DELETE_FILM_DIRECTORS_BY_ID, filmId);
+
+        if (allDirectors == null || allDirectors.isEmpty()) {
+            return;
+        }
+
+        List<Director> directors = allDirectors.stream()
+                .filter(Objects::nonNull)
+                .filter(d -> d.getId() != null)
+                .collect(java.util.stream.Collectors.toMap(
+                        Director::getId,
+                        d -> d,
+                        (a, b) -> a
+                ))
+                .values()
+                .stream()
+                .sorted(Comparator.comparing(Director::getId))
+                .toList();
+
+        batchInsert(INSERT_DIRECTORS_QUERY, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                Director director = directors.get(i);
+                ps.setLong(1, filmId);
+                ps.setLong(2, director.getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return directors.size();
+            }
+        });
+    }
+
 
 }

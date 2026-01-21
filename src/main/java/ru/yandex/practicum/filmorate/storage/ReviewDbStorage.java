@@ -2,14 +2,17 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
-import org.springframework.dao.EmptyResultDataAccessException;
 
-
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -20,9 +23,6 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
 
     private static final String FIND_REVIEW_BY_ID =
             "SELECT * FROM \"reviews\" WHERE \"review_id\" = ?;";
-
-    private static final String FIND_REVIEW_BY_FILM_AND_USER =
-            "SELECT * FROM \"reviews\" WHERE \"film_id\" = ? AND \"user_id\" = ?;";
 
     private static final String INSERT_REVIEW =
             "INSERT INTO \"reviews\" (\"content\", \"is_positive\", \"user_id\", \"film_id\", \"useful\") " +
@@ -73,80 +73,72 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
 
     @Override
     public Review create(Review newReview) {
-        insert(
-                INSERT_REVIEW,
-                newReview.getContent(),
-                newReview.getIsPositive(),
-                newReview.getUserId(),
-                newReview.getFilmId()
-        );
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        Optional<Review> createdReview = findOne(FIND_REVIEW_BY_FILM_AND_USER, newReview.getFilmId(), newReview.getUserId());
-        if (createdReview.isPresent()) {
-            Long id = createdReview.get().getReviewId();
-            newReview.setReviewId(id);
+        jdbc.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(INSERT_REVIEW, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, newReview.getContent());
+            ps.setBoolean(2, newReview.getIsPositive());
+            ps.setLong(3, newReview.getUserId());
+            ps.setLong(4, newReview.getFilmId());
+            return ps;
+        }, keyHolder);
+
+        Number key = keyHolder.getKey();
+        if (key == null) {
+            throw new IllegalStateException("Не удалось получить review_id после вставки.");
         }
+
+        newReview.setReviewId(key.longValue());
+        newReview.setUseful(0);
         return newReview;
     }
 
     @Override
     public Review update(Review review) {
         Optional<Review> oldReview = findOne(FIND_REVIEW_BY_ID, review.getReviewId());
-        if (oldReview.isPresent()) {
-            update(
-                    UPDATE_REVIEW,
-                    review.getContent(),
-                    review.getIsPositive(),
-                    review.getReviewId()
-            );
-            Optional<Review> updatedReview = findOne(FIND_REVIEW_BY_ID, review.getReviewId());
-            if (updatedReview.isPresent()) {
-                return updatedReview.get();
-            } else {
-                throw new NotFoundException("Отзыв с id=" + review.getReviewId() + " пропал.");
-            }
-        } else {
+        if (oldReview.isEmpty()) {
             throw new NotFoundException("Отзыв с id=" + review.getReviewId() + " не найден.");
         }
+
+        update(UPDATE_REVIEW, review.getContent(), review.getIsPositive(), review.getReviewId());
+
+        return findOne(FIND_REVIEW_BY_ID, review.getReviewId())
+                .orElseThrow(() -> new NotFoundException("Отзыв с id=" + review.getReviewId() + " пропал."));
     }
 
     @Override
     public Review delete(Long reviewId) {
-        Optional<Review> review = findOne(FIND_REVIEW_BY_ID, reviewId);
-        if (review.isPresent()) {
-            delete(DELETE_REVIEW, reviewId);
-            return review.get();
-        } else {
-            throw new NotFoundException("Отзыв с id=" + reviewId + " не найден.");
-        }
+        Review review = findOne(FIND_REVIEW_BY_ID, reviewId)
+                .orElseThrow(() -> new NotFoundException("Отзыв с id=" + reviewId + " не найден."));
+
+        delete(DELETE_REVIEW, reviewId);
+        return review;
     }
 
     @Override
     public Review getReviewById(Long reviewId) {
-        Optional<Review> review = findOne(FIND_REVIEW_BY_ID, reviewId);
-        if (review.isPresent()) {
-            return review.get();
-        } else {
-            throw new NotFoundException("Отзыв с id=" + reviewId + " не найден.");
-        }
+        return findOne(FIND_REVIEW_BY_ID, reviewId)
+                .orElseThrow(() -> new NotFoundException("Отзыв с id=" + reviewId + " не найден."));
     }
 
     @Override
     public Collection<Review> getFilmReviews(Long filmId, Integer count) {
         if (filmId == -1) {
             return findMany(FIND_ALL_REVIEWS, count);
-        } else {
-            return findMany(FIND_REVIEWS_BY_FILM, filmId, count);
         }
+        return findMany(FIND_REVIEWS_BY_FILM, filmId, count);
     }
 
     @Override
     public void putLike(Long reviewId, Long userId) {
+        ensureReviewExists(reviewId);
+
         Optional<Boolean> reaction = findReaction(reviewId, userId);
 
         if (reaction.isEmpty()) {
             insert(INSERT_REACTION, reviewId, userId, true);
-            update(UPDATE_USEFUL_DELTA, 1, reviewId);
+            ensureUsefulUpdated(1, reviewId);
             return;
         }
 
@@ -155,16 +147,18 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
         }
 
         update(UPDATE_REACTION, true, reviewId, userId);
-        update(UPDATE_USEFUL_DELTA, 2, reviewId);
+        ensureUsefulUpdated(2, reviewId);
     }
 
     @Override
     public void putDislike(Long reviewId, Long userId) {
+        ensureReviewExists(reviewId);
+
         Optional<Boolean> reaction = findReaction(reviewId, userId);
 
         if (reaction.isEmpty()) {
             insert(INSERT_REACTION, reviewId, userId, false);
-            update(UPDATE_USEFUL_DELTA, -1, reviewId);
+            ensureUsefulUpdated(-1, reviewId);
             return;
         }
 
@@ -173,29 +167,30 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
         }
 
         update(UPDATE_REACTION, false, reviewId, userId);
-        update(UPDATE_USEFUL_DELTA, -2, reviewId);
+        ensureUsefulUpdated(-2, reviewId);
     }
 
     @Override
     public void deleteLike(Long reviewId, Long userId) {
-        Optional<Boolean> reaction = findReaction(reviewId, userId);
+        ensureReviewExists(reviewId);
 
+        Optional<Boolean> reaction = findReaction(reviewId, userId);
         if (reaction.isPresent() && Boolean.TRUE.equals(reaction.get())) {
             delete(DELETE_REACTION, reviewId, userId);
-            update(UPDATE_USEFUL_DELTA, -1, reviewId);
+            ensureUsefulUpdated(-1, reviewId);
         }
     }
 
     @Override
     public void deleteDislike(Long reviewId, Long userId) {
-        Optional<Boolean> reaction = findReaction(reviewId, userId);
+        ensureReviewExists(reviewId);
 
+        Optional<Boolean> reaction = findReaction(reviewId, userId);
         if (reaction.isPresent() && Boolean.FALSE.equals(reaction.get())) {
             delete(DELETE_REACTION, reviewId, userId);
-            update(UPDATE_USEFUL_DELTA, 1, reviewId);
+            ensureUsefulUpdated(1, reviewId);
         }
     }
-
 
     private Optional<Boolean> findReaction(Long reviewId, Long userId) {
         try {
@@ -206,4 +201,16 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
         }
     }
 
+    private void ensureReviewExists(Long reviewId) {
+        if (findOne(FIND_REVIEW_BY_ID, reviewId).isEmpty()) {
+            throw new NotFoundException("Отзыв с id=" + reviewId + " не найден.");
+        }
+    }
+
+    private void ensureUsefulUpdated(int delta, Long reviewId) {
+        int updated = jdbc.update(UPDATE_USEFUL_DELTA, delta, reviewId);
+        if (updated == 0) {
+            throw new NotFoundException("Отзыв с id=" + reviewId + " не найден.");
+        }
+    }
 }
