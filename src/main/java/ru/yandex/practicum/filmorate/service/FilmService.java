@@ -134,4 +134,14 @@ public class FilmService {
     public List<Film> getCommonFilms(long userId, long friendId) {
         return filmStorage.getCommonFilms(userId, friendId);
     }
+
+    public Collection<Film> searchFilms(String query, List<String> searchBy) {
+        List<Film> films = filmStorage.searchFilms(query, searchBy);
+
+        Collection<Film> newFilms = new ArrayList<>();
+        for (Film film : films) {
+            newFilms.add(updateDirectors(updateGenres(film)));
+        }
+        return newFilms;
+    }
 }
