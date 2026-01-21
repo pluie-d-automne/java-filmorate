@@ -20,8 +20,14 @@ public class FilmRowMapper implements RowMapper<Film> {
     @Override
     public Film mapRow(ResultSet resultSet, int rowNum) throws SQLException {
         Film film = new Film();
+
+        //Ругается на то, что вмсто null в списках реж. и жанров тесты ждут пустые списки, поэтому создаем сразу
         List<Genre> genres = new ArrayList<>();
+        film.setGenres(genres);
+
         List<Director> directors = new ArrayList<>();
+        film.setDirectors(directors);
+
         film.setId(resultSet.getLong("id"));
         film.setName(resultSet.getString("name"));
         film.setDescription(resultSet.getString("description"));
@@ -40,7 +46,7 @@ public class FilmRowMapper implements RowMapper<Film> {
                 genres.add(genre);
             }
 
-            film.setGenres(genres);
+            //film.setGenres(genres);
         }
         Array arrayDirector = resultSet.getArray("director");
         if (arrayDirector != null) {
@@ -53,7 +59,7 @@ public class FilmRowMapper implements RowMapper<Film> {
                 directors.add(director);
             }
         }
-        film.setDirectors(directors);
+        //film.setDirectors(directors);
         film.setLikesCnt(resultSet.getInt("likes_cnt"));
         Integer mpaId = resultSet.getInt("rating_id");
         String mpaName = resultSet.getString("mpa_name");

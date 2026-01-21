@@ -6,6 +6,7 @@ DELETE FROM  "genres";
 INSERT INTO "genres" ("id", "name")
 VALUES (1, 'Комедия'), (2, 'Драма'), (3, 'Мультфильм'), (4, 'Триллер'), (5, 'Документальный'), (6, 'Боевик');
 
-DELETE FROM "directors";
-INSERT INTO "directors" ("name")
-VALUES ('Леонид Гайдай'), ('Андрей Тарковский'), ('Стивен Спилберг'), ('Кристофер Нолан');
+
+--DELETE FROM "directors";
+--INSERT INTO "directors" ("name")
+--VALUES ('Леонид Гайдай'), ('Андрей Тарковский'), ('Стивен Спилберг'), ('Кристофер Нолан');

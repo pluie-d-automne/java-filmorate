@@ -5,6 +5,7 @@ import lombok.Data;
 import ru.yandex.practicum.filmorate.validators.CinemaDate;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
@@ -27,8 +28,8 @@ public class Film {
     @Positive(groups = {Marker.OnCreate.class, Marker.OnUpdate.class}, message = "Продолжительность фильма должна быть положительным числом.")
     private Integer duration;
     private Set<Long> likes;
-    private Collection<Genre> genres;
+    private Collection<Genre> genres = new ArrayList<>();//тут та же логика, но конкретно здесь это не обязательно, просто перестраховка
     private Mpa mpa;
     private int likesCnt;
-    private Collection<Director> directors;
+    private Collection<Director> directors = new ArrayList<>();
 }
