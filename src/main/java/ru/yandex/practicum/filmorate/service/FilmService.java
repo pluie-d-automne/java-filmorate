@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.UserFeedEvent;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
@@ -23,14 +25,18 @@ public class FilmService {
 
     private final DirectorStorage directorStorage;
 
+    private final FeedStorage feedStorage;
+
     public FilmService(
             @Qualifier("filmDbStorage") FilmStorage filmStorage,
             GenreStorage genreStorage,
-            DirectorStorage directorStorage
+            DirectorStorage directorStorage,
+            FeedStorage feedStorage
     ) {
         this.filmStorage = filmStorage;
         this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
+        this.feedStorage = feedStorage;
     }
 
     public Collection<Film> getAllFilms() {
@@ -55,10 +61,24 @@ public class FilmService {
 
     public void like(Long filmId, Long userId) {
         filmStorage.like(filmId, userId);
+
+        feedStorage.addEvent(UserFeedEvent.builder()
+                .userId(userId)
+                .eventType(UserFeedEvent.EventType.LIKE)
+                .operation(UserFeedEvent.OperationType.ADD)
+                .entityId(filmId)
+                .build());
     }
 
     public void unlike(Long filmId, Long userId) {
         filmStorage.unlike(filmId, userId);
+
+        feedStorage.addEvent(UserFeedEvent.builder()
+                .userId(userId)
+                .eventType(UserFeedEvent.EventType.LIKE)
+                .operation(UserFeedEvent.OperationType.REMOVE)
+                .entityId(filmId)
+                .build());
     }
 
     public void delete(Long filmId) {
