@@ -6,9 +6,9 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Repository
@@ -84,5 +84,21 @@ public class DirectorDbStorage extends BaseRepository<Director> implements Direc
     public Collection<Director> getAllDirectors() {
         log.trace("Получаем список всех режиссёров");
         return findMany(FIND_ALL_QUERY);
+    }
+
+    @Override
+    public Film updateDirectors(Film film) {
+        List<Director> updatedDirector = new ArrayList<>();
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            Collection<Long> directorIds = film.getDirectors().stream().map(Director::getId).toList();
+            updatedDirector = getAllDirectors()
+                    .stream()
+                    .filter(director -> directorIds.contains(director.getId()))
+                    .sorted(Comparator.comparing(Director::getId))
+                    .toList();
+        }
+
+        film.setDirectors(updatedDirector);
+        return film;
     }
 }

@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.model.UserFeedEvent;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
-import java.util.List;
 
 @Validated
 @Slf4j
@@ -87,7 +86,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/recommendations")
-    public List<Film> getRecommendations(@PathVariable @Positive(message = "The user's ID must be positive") Long userId) {
+    public Collection<Film> getRecommendations(@PathVariable @Positive(message = "The user's ID must be positive") Long userId) {
         log.trace("Received a recommendation request for a user with ID: {}", userId);
         return userService.getRecommendations(userId);
     }

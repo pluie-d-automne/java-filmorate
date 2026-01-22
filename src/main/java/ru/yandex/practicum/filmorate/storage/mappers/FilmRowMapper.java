@@ -39,9 +39,10 @@ public class FilmRowMapper implements RowMapper<Film> {
                 genre.setId(genreId);
                 genres.add(genre);
             }
-
-            film.setGenres(genres);
         }
+
+        film.setGenres(genres);
+
         Array arrayDirector = resultSet.getArray("director");
         if (arrayDirector != null) {
             Object[] oArray = (Object[]) arrayDirector.getArray();
@@ -53,6 +54,7 @@ public class FilmRowMapper implements RowMapper<Film> {
                 directors.add(director);
             }
         }
+
         film.setDirectors(directors);
         film.setLikesCnt(resultSet.getInt("likes_cnt"));
         Integer mpaId = resultSet.getInt("rating_id");
