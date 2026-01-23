@@ -82,7 +82,7 @@ public class DirectorDbStorage extends BaseRepository<Director> implements Direc
 
     @Override
     public Collection<Director> getAllDirectors() {
-        log.trace("Получаем список всех режиссёров");
+        log.trace("Получаем список всех режиссёров.");
         return findMany(FIND_ALL_QUERY);
     }
 
