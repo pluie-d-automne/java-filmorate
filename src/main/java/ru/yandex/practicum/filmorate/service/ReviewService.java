@@ -16,17 +16,17 @@ public class ReviewService {
 
     @Qualifier("reviewDbStorage")
     private final ReviewStorage reviewStorage;
-    private final FeedStorage feedStorage;
+    private final FeedService feedService;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
 
     public ReviewService(@Qualifier("reviewDbStorage") ReviewStorage reviewStorage,
-                         FeedStorage feedStorage,
+                         FeedService feedService,
                          @Qualifier("userDbStorage") UserStorage userStorage,
                          @Qualifier("filmDbStorage") FilmStorage filmStorage
     ) {
         this.reviewStorage = reviewStorage;
-        this.feedStorage = feedStorage;
+        this.feedService = feedService;
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
     }
@@ -35,13 +35,7 @@ public class ReviewService {
         userStorage.getUserById(newReview.getUserId());
         filmStorage.getFilmById(newReview.getFilmId());
         Review review = reviewStorage.create(newReview);
-
-        feedStorage.addEvent(UserFeedEvent.builder()
-                .userId(review.getUserId())
-                .eventType(UserFeedEvent.EventType.REVIEW)
-                .operation(UserFeedEvent.OperationType.ADD)
-                .entityId(review.getReviewId())
-                .build());
+        feedService.addReviewEvent(review.getUserId(), review.getReviewId());
 
         return review;
     }
@@ -50,26 +44,14 @@ public class ReviewService {
         userStorage.getUserById(review.getUserId());
         filmStorage.getFilmById(review.getFilmId());
         Review updatedReview = reviewStorage.update(review);
-
-        feedStorage.addEvent(UserFeedEvent.builder()
-                .userId(updatedReview.getUserId())
-                .eventType(UserFeedEvent.EventType.REVIEW)
-                .operation(UserFeedEvent.OperationType.UPDATE)
-                .entityId(updatedReview.getReviewId())
-                .build());
+        feedService.updateReviewEvent(updatedReview.getUserId(), updatedReview.getReviewId());
 
         return updatedReview;
     }
 
     public Review delete(Long reviewId) {
         Review review = reviewStorage.delete(reviewId);
-
-        feedStorage.addEvent(UserFeedEvent.builder()
-                .userId(review.getUserId())
-                .eventType(UserFeedEvent.EventType.REVIEW)
-                .operation(UserFeedEvent.OperationType.REMOVE)
-                .entityId(review.getReviewId())
-                .build());
+        feedService.removeReviewEvent(review.getUserId(), review.getReviewId());
 
         return review;
     }

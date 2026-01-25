@@ -19,19 +19,6 @@ public class FeedDbStorage implements FeedStorage {
     static final String GET_USER_FEED_QUERY =
             "SELECT * FROM \"user_feeds\" WHERE \"user_id\" = ? ORDER BY \"timestamp\"";
 
-    // лента событий друзей пользователя
-    //         "SELECT uf.* " +
-    //                 "FROM \"user_feeds\" uf " +
-    //                 "WHERE uf.\"user_id\" IN (" +
-    //                        "SELECT f.\"friend_id\" " +
-    //                            "FROM \"friendships\" f " +
-    //                            "WHERE f.\"user_id\" = ? " +
-    //                    "UNION " +
-    //                        "SELECT f.\"user_id\" " +
-    //                            "FROM \"friendships\" f " +
-    //                            "WHERE f.\"friend_id\" = ?) " +
-    //                 "ORDER BY uf.\"timestamp\" DESC";        //в какую сторону сортировать
-
     private static final String INSERT_EVENT_QUERY =
             "INSERT INTO \"user_feeds\" (\"timestamp\", \"user_id\", \"event_type\", \"operation\", \"entity_id\") " +
                     "VALUES (?, ?, ?, ?, ?)";
@@ -41,9 +28,6 @@ public class FeedDbStorage implements FeedStorage {
         log.debug("Получаем ленту событий для пользователя с id={}", userId);
 
         return jdbc.query(GET_USER_FEED_QUERY, new FeedRowMapper(), userId);
-
-        //лента событий друзей пользователя
-        //return jdbc.query(GET_USER_FEED_QUERY, new FeedRowMapper(), userId, userId);
     }
 
     @Override
