@@ -81,7 +81,8 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
                 newReview.getFilmId()
         );
 
-        Optional<Review> createdReview = findOne(FIND_REVIEW_BY_FILM_AND_USER, newReview.getFilmId(), newReview.getUserId());
+        Optional<Review> createdReview = findOne(FIND_REVIEW_BY_FILM_AND_USER,
+                newReview.getFilmId(), newReview.getUserId());
         if (createdReview.isPresent()) {
             Long id = createdReview.get().getReviewId();
             newReview.setReviewId(id);
@@ -93,12 +94,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     public Review update(Review review) {
         Optional<Review> oldReview = findOne(FIND_REVIEW_BY_ID, review.getReviewId());
         if (oldReview.isPresent()) {
-            update(
-                    UPDATE_REVIEW,
-                    review.getContent(),
-                    review.getIsPositive(),
-                    review.getReviewId()
-            );
+            update(UPDATE_REVIEW, review.getContent(), review.getIsPositive(), review.getReviewId());
             Optional<Review> updatedReview = findOne(FIND_REVIEW_BY_ID, review.getReviewId());
             if (updatedReview.isPresent()) {
                 return updatedReview.get();

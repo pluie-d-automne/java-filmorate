@@ -1,9 +1,15 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Review {
     @NotBlank(groups = {Marker.OnCreate.class, Marker.OnUpdate.class})
     private String content;
