@@ -26,7 +26,6 @@ public class FeedDbStorage implements FeedStorage {
     @Override
     public List<UserFeedEvent> getUserFeed(Long userId) {
         log.debug("Получаем ленту событий для пользователя с id={}", userId);
-
         return jdbc.query(GET_USER_FEED_QUERY, new FeedRowMapper(), userId);
     }
 

@@ -96,6 +96,7 @@ public class UserService {
 
     public Collection<UserFeedEvent> getUserFeed(Long userId) {
         getUserById(userId);
+
         return feedService.getUserFeed(userId);
     }
 }

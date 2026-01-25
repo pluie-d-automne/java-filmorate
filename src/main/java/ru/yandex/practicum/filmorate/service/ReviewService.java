@@ -35,6 +35,7 @@ public class ReviewService {
         userStorage.getUserById(newReview.getUserId());
         filmStorage.getFilmById(newReview.getFilmId());
         Review review = reviewStorage.create(newReview);
+
         feedService.addReviewEvent(review.getUserId(), review.getReviewId());
 
         return review;
@@ -44,6 +45,7 @@ public class ReviewService {
         userStorage.getUserById(review.getUserId());
         filmStorage.getFilmById(review.getFilmId());
         Review updatedReview = reviewStorage.update(review);
+
         feedService.updateReviewEvent(updatedReview.getUserId(), updatedReview.getReviewId());
 
         return updatedReview;
@@ -51,6 +53,7 @@ public class ReviewService {
 
     public Review delete(Long reviewId) {
         Review review = reviewStorage.delete(reviewId);
+
         feedService.removeReviewEvent(review.getUserId(), review.getReviewId());
 
         return review;

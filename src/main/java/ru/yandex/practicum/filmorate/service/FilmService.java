@@ -61,6 +61,7 @@ public class FilmService {
         userStorage.getUserById(userId);
         filmStorage.getFilmById(filmId);
         filmStorage.like(filmId, userId);
+
         feedService.addLikeEvent(userId, filmId);
     }
 
@@ -68,6 +69,7 @@ public class FilmService {
         userStorage.getUserById(userId);
         filmStorage.getFilmById(filmId);
         filmStorage.unlike(filmId, userId);
+
         feedService.removeLikeEvent(userId, filmId);
     }
 

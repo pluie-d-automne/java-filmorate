@@ -23,6 +23,7 @@ public class FeedService {
                 .operation(UserFeedEvent.OperationType.ADD)
                 .entityId(friendId)
                 .build();
+
         feedStorage.addEvent(event);
     }
 
@@ -33,6 +34,7 @@ public class FeedService {
                 .operation(UserFeedEvent.OperationType.REMOVE)
                 .entityId(friendId)
                 .build();
+
         feedStorage.addEvent(event);
     }
 
@@ -43,6 +45,7 @@ public class FeedService {
                 .operation(UserFeedEvent.OperationType.ADD)
                 .entityId(reviewId)
                 .build();
+
         feedStorage.addEvent(event);
     }
 
@@ -53,6 +56,7 @@ public class FeedService {
                 .operation(UserFeedEvent.OperationType.UPDATE)
                 .entityId(reviewId)
                 .build();
+
         feedStorage.addEvent(event);
     }
 
@@ -63,6 +67,7 @@ public class FeedService {
                 .operation(UserFeedEvent.OperationType.REMOVE)
                 .entityId(reviewId)
                 .build();
+
         feedStorage.addEvent(event);
     }
 
@@ -73,6 +78,7 @@ public class FeedService {
                 .operation(UserFeedEvent.OperationType.ADD)
                 .entityId(filmId)
                 .build();
+
         feedStorage.addEvent(event);
     }
 
@@ -83,6 +89,7 @@ public class FeedService {
                 .operation(UserFeedEvent.OperationType.REMOVE)
                 .entityId(filmId)
                 .build();
+
         feedStorage.addEvent(event);
     }
 
