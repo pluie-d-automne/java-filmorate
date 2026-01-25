@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.UserFeedEvent;
 import ru.yandex.practicum.filmorate.storage.FeedStorage;
 
-import java.time.Instant;
 import java.util.List;
 
 @Slf4j
