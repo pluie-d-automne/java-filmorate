@@ -60,14 +60,10 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
             log.info("Имя пользователя пустое - будет использован логин");
             user.setName(user.getLogin());
         }
-        insert(
-                INSERT_QUERY,
-                user.getEmail(),
-                user.getLogin(),
-                user.getName(),
-                user.getBirthday()
-        );
+
+        insert(INSERT_QUERY, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
         Optional<User> createdUser = findOne(FIND_USER_BY_LOGIN, user.getLogin());
+
         if (createdUser.isPresent()) {
             Long id = createdUser.get().getId();
             user.setId(id);
@@ -78,16 +74,11 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     @Override
     public User update(User user) {
         Optional<User> oldUser = findOne(FIND_USER_BY_ID, user.getId());
+
         if (oldUser.isPresent()) {
-            update(
-                    UPDATE_QUERY,
-                    user.getEmail(),
-                    user.getLogin(),
-                    user.getName(),
-                    user.getBirthday(),
-                    user.getId()
-            );
+            update(UPDATE_QUERY, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), user.getId());
             Optional<User> updatedUser = findOne(FIND_USER_BY_ID, user.getId());
+
             if (updatedUser.isPresent()) {
                 return updatedUser.get();
             } else {
@@ -101,6 +92,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     @Override
     public User delete(Long userId) {
         Optional<User> user = findOne(FIND_USER_BY_ID, userId);
+
         if (user.isPresent()) {
             delete(DELETE_QUERY, userId);
             return user.get();
@@ -112,6 +104,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     @Override
     public User getUserById(Long userId) {
         Optional<User> user = findOne(FIND_USER_BY_ID, userId);
+
         if (user.isPresent()) {
             return user.get();
         } else {
@@ -129,11 +122,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         } else if (friend.isEmpty()) {
             throw new NotFoundException("Пользователь с id=" + friendId + " не найден.");
         } else {
-            insert(
-                    ADD_FRIEND,
-                    userId,
-                    friendId
-            );
+            insert(ADD_FRIEND, userId, friendId);
         }
     }
 
@@ -154,6 +143,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     @Override
     public Collection<User> getUserFriends(Long userId) {
         Optional<User> user = findOne(FIND_USER_BY_ID, userId);
+
         if (user.isPresent()) {
             return findMany(GET_ALL_FRIENDS, userId);
         } else {
@@ -180,12 +170,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         log.trace("Ищем пользователя с похожими вкусами для пользователя с ID: {}", userId);
 
         try {
-            return jdbc.queryForObject(
-                    FIND_MOST_SIMILAR_USER,
-                    Long.class,
-                    userId,
-                    userId
-            );
+            return jdbc.queryForObject(FIND_MOST_SIMILAR_USER, Long.class, userId, userId);
         } catch (org.springframework.dao.EmptyResultDataAccessException e) {
             log.debug("Для пользователя с ID {} не найден пользователь с похожими вкусами", userId);
             return null;

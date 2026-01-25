@@ -73,29 +73,31 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
 
     @Override
     public Review create(Review newReview) {
-        insert(
-                INSERT_REVIEW,
+        insert(INSERT_REVIEW,
                 newReview.getContent(),
                 newReview.getIsPositive(),
                 newReview.getUserId(),
-                newReview.getFilmId()
-        );
+                newReview.getFilmId());
 
         Optional<Review> createdReview = findOne(FIND_REVIEW_BY_FILM_AND_USER,
                 newReview.getFilmId(), newReview.getUserId());
+
         if (createdReview.isPresent()) {
             Long id = createdReview.get().getReviewId();
             newReview.setReviewId(id);
         }
+
         return newReview;
     }
 
     @Override
     public Review update(Review review) {
         Optional<Review> oldReview = findOne(FIND_REVIEW_BY_ID, review.getReviewId());
+
         if (oldReview.isPresent()) {
             update(UPDATE_REVIEW, review.getContent(), review.getIsPositive(), review.getReviewId());
             Optional<Review> updatedReview = findOne(FIND_REVIEW_BY_ID, review.getReviewId());
+
             if (updatedReview.isPresent()) {
                 return updatedReview.get();
             } else {
@@ -109,6 +111,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     @Override
     public Review delete(Long reviewId) {
         Optional<Review> review = findOne(FIND_REVIEW_BY_ID, reviewId);
+
         if (review.isPresent()) {
             delete(DELETE_REVIEW, reviewId);
             return review.get();
@@ -120,6 +123,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     @Override
     public Review getReviewById(Long reviewId) {
         Optional<Review> review = findOne(FIND_REVIEW_BY_ID, reviewId);
+
         if (review.isPresent()) {
             return review.get();
         } else {
@@ -129,6 +133,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
 
     @Override
     public Collection<Review> getFilmReviews(Long filmId, Integer count) {
+
         if (filmId == -1) {
             return findMany(FIND_ALL_REVIEWS, count);
         } else {
@@ -146,7 +151,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
             return;
         }
 
-        if (Boolean.TRUE.equals(reaction.get())) {
+        if (reaction.get()) {
             return;
         }
 
@@ -164,7 +169,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
             return;
         }
 
-        if (Boolean.FALSE.equals(reaction.get())) {
+        if (!reaction.get()) {
             return;
         }
 
@@ -176,7 +181,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     public void deleteLike(Long reviewId, Long userId) {
         Optional<Boolean> reaction = findReaction(reviewId, userId);
 
-        if (reaction.isPresent() && Boolean.TRUE.equals(reaction.get())) {
+        if (reaction.isPresent() && reaction.get()) {
             delete(DELETE_REACTION, reviewId, userId);
             update(UPDATE_USEFUL_DELTA, -1, reviewId);
         }
@@ -186,7 +191,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     public void deleteDislike(Long reviewId, Long userId) {
         Optional<Boolean> reaction = findReaction(reviewId, userId);
 
-        if (reaction.isPresent() && Boolean.FALSE.equals(reaction.get())) {
+        if (reaction.isPresent() && !reaction.get()) {
             delete(DELETE_REACTION, reviewId, userId);
             update(UPDATE_USEFUL_DELTA, 1, reviewId);
         }
@@ -196,7 +201,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     private Optional<Boolean> findReaction(Long reviewId, Long userId) {
         try {
             Boolean isLike = jdbc.queryForObject(FIND_REACTION, Boolean.class, reviewId, userId);
-            return Optional.ofNullable(isLike);
+            return Optional.of(isLike);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }

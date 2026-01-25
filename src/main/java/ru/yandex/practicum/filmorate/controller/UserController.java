@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +17,10 @@ import java.util.Collection;
 @Validated
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @GetMapping
     public Collection<User> getAllUsers() {
@@ -40,10 +38,8 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/friends/common/{otherUserId}")
-    public Collection<User> getCommonFriends(
-            @PathVariable long userId,
-            @PathVariable long otherUserId
-    ) {
+    public Collection<User> getCommonFriends(@PathVariable long userId,
+                                             @PathVariable long otherUserId) {
         return userService.getCommonFriends(userId, otherUserId);
     }
 
@@ -62,19 +58,13 @@ public class UserController {
     }
 
     @PutMapping("/{userId}/friends/{friendId}")
-    public void addFriend(
-            @PathVariable Long userId,
-            @PathVariable Long friendId
-    ) {
+    public void addFriend(@PathVariable Long userId, @PathVariable Long friendId) {
         log.info("User with id={} adds user with id={} to friends", userId, friendId);
         userService.addFriend(userId, friendId);
     }
 
     @DeleteMapping("/{userId}/friends/{friendId}")
-    public void deleteFriend(
-            @PathVariable Long userId,
-            @PathVariable Long friendId
-    ) {
+    public void deleteFriend(@PathVariable Long userId, @PathVariable Long friendId) {
         log.info("User with id={} deletes user with id={} from friends", userId, friendId);
         userService.deleteFriend(userId, friendId);
     }

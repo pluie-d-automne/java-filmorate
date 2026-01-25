@@ -29,6 +29,7 @@ public class GenreDbStorage extends BaseRepository<Genre> implements GenreStorag
     @Override
     public Genre getGenreById(Integer genreId) {
         Optional<Genre> genre = findOne(FIND_GENRE_BY_ID, genreId);
+
         if (genre.isPresent()) {
             return genre.get();
         } else {
@@ -39,6 +40,7 @@ public class GenreDbStorage extends BaseRepository<Genre> implements GenreStorag
     @Override
     public Film updateGenres(Film film) {
         List<Genre> updatedGenres = new ArrayList<>();
+
         if (film.getGenres() != null) {
             Collection<Integer> genreIds = film.getGenres().stream().map(Genre::getId).toList();
             updatedGenres = getAllGenre()
@@ -46,7 +48,6 @@ public class GenreDbStorage extends BaseRepository<Genre> implements GenreStorag
                     .filter(genre -> genreIds.contains(genre.getId()))
                     .sorted(Comparator.comparing(Genre::getId))
                     .toList();
-
         }
 
         film.setGenres(updatedGenres);
