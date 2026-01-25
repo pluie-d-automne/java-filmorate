@@ -46,45 +46,35 @@ public class ReviewController {
     }
 
     @GetMapping
-    public Collection<Review> getReviews(
-            @RequestParam(defaultValue = "-1") long filmId,
-            @RequestParam(defaultValue = "10") int count
-    ) {
+    public Collection<Review> getReviews(@RequestParam(defaultValue = "-1") long filmId,
+                                         @RequestParam(defaultValue = "10") int count) {
         return reviewService.getFilmReviews(filmId, count);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void putLike(
-            @PathVariable("id") Long reviewId,
-            @PathVariable Long userId
-    ) {
+    public void putLike(@PathVariable("id") Long reviewId,
+                        @PathVariable Long userId) {
         log.info("Пользователь с id={} поставил лайк отзыву с id={}", userId, reviewId);
         reviewService.putLike(reviewId, userId);
     }
 
     @PutMapping("/{id}/dislike/{userId}")
-    public void putDislike(
-            @PathVariable("id") Long reviewId,
-            @PathVariable Long userId
-    ) {
+    public void putDislike(@PathVariable("id") Long reviewId,
+                           @PathVariable Long userId) {
         log.info("Пользователь с id={} поставил дизлайк отзыву с id={}", userId, reviewId);
         reviewService.putDislike(reviewId, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(
-            @PathVariable("id") Long reviewId,
-            @PathVariable Long userId
-    ) {
+    public void deleteLike(@PathVariable("id") Long reviewId,
+                           @PathVariable Long userId) {
         log.info("Пользователь с id={} удалил лайк у отзыва с id={}", userId, reviewId);
         reviewService.deleteLike(reviewId, userId);
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")
-    public void deleteDislike(
-            @PathVariable("id") Long reviewId,
-            @PathVariable Long userId
-    ) {
+    public void deleteDislike(@PathVariable("id") Long reviewId,
+                              @PathVariable Long userId) {
         log.info("Пользователь с id={} удалил дизлайк у отзыва с id={}", userId, reviewId);
         reviewService.deleteDislike(reviewId, userId);
     }

@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -12,31 +13,18 @@ import java.util.Collection;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     @Qualifier("userDbStorage")
     private final UserStorage userStorage;
 
     @Qualifier("filmDbStorage")
-    private final FilmStorage filmStorage;
+    private final FilmService filmService;
 
     private final FeedService feedService;
-    private final GenreStorage genreStorage;
-    private final DirectorStorage directorStorage;
-
-    public UserService(
-            @Qualifier("userDbStorage") UserStorage userStorage,
-            @Qualifier("filmDbStorage") FilmStorage filmStorage,
-            FeedService feedService,
-            GenreStorage genreStorage,
-            DirectorStorage directorStorage
-    ) {
-        this.userStorage = userStorage;
-        this.filmStorage = filmStorage;
-        this.feedService = feedService;
-        this.genreStorage = genreStorage;
-        this.directorStorage = directorStorage;
-    }
+    private final GenreService genreService;
+    private final DirectorService directorService;
 
     public Collection<User> getAllUsers() {
         return userStorage.getAllUsers();
@@ -87,8 +75,8 @@ public class UserService {
 
         Collection<Film> recommendedFilms = new ArrayList<>();
 
-        for (Film film : filmStorage.getFilmsLikedByUserButNotByOther(similarUserId, userId)) {
-            recommendedFilms.add(directorStorage.updateDirectors(genreStorage.updateGenres(film)));
+        for (Film film : filmService.getFilmsLikedByUserButNotByOther(similarUserId, userId)) {
+            recommendedFilms.add(directorService.updateDirectors(genreService.updateGenres(film)));
         }
 
         return recommendedFilms;

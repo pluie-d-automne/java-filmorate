@@ -13,9 +13,9 @@ import java.sql.SQLException;
 public class DirectorRowMapper implements RowMapper<Director> {
     @Override
     public Director mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-        Director director = new Director();
-        director.setId(resultSet.getLong("id"));
-        director.setName(resultSet.getString("name"));
-        return director;
+        return Director.builder()
+                .id(resultSet.getLong("id"))
+                .name(resultSet.getString("name"))
+                .build();
     }
 }

@@ -129,6 +129,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     @Override
     public Film getFilmById(Long filmId) {
         Optional<Film> film = findOne(FIND_FILM_BY_ID, filmId);
+
         if (film.isPresent()) {
             return film.get();
         } else {
@@ -141,14 +142,12 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         Mpa mpa = film.getMpa();
         Integer mpaId = mpa != null ? mpa.getId() : null;
 
-        insert(
-                INSERT_FILM_QUERY,
+        insert(INSERT_FILM_QUERY,
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                mpaId
-        );
+                mpaId);
 
         Optional<Film> createdFilm = findOne(FIND_FILM_BY_NAME, film.getName(), film.getReleaseDate());
 
@@ -158,6 +157,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             updateFilmGenres(film.getGenres(), id);
             film.setId(id);
         }
+
         return film;
     }
 
@@ -166,18 +166,17 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         Long filmId = film.getId();
         log.trace("Request to change film with id=" + filmId);
         Optional<Film> oldFilm = findOne(FIND_FILM_BY_ID, filmId);
+
         if (oldFilm.isPresent()) {
             Mpa mpa = film.getMpa();
             Integer mpaId = mpa != null ? mpa.getId() : null;
-            update(
-                    UPDATE_QUERY,
+            update(UPDATE_QUERY,
                     film.getName(),
                     film.getDescription(),
                     film.getReleaseDate(),
                     film.getDuration(),
                     mpaId,
-                    filmId
-            );
+                    filmId);
             updateFilmGenres(film.getGenres(), filmId);
             updateFilmDirectors(film.getDirectors(), filmId);
             return getFilmById(filmId);
@@ -205,19 +204,26 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     @Override
     public void unlike(Long filmId, Long userId) {
-        delete(UNLIKE_FILM, filmId, userId);
-        log.info("Удалён лайк пользователя " + userId + " фильму " + filmId);
+        boolean deletedCnt = delete(UNLIKE_FILM, filmId, userId);
+        if (deletedCnt) {
+            log.info("Удалён лайк пользователя " + userId + " фильму " + filmId);
+        } else {
+            throw new NotFoundException("Удаляемый лайк не найден");
+        }
     }
 
     @Override
     public Collection<Film> getFilmsByDirector(Long directorId, String sortBy) {
         String query;
+
         if (sortBy.equals("likes")) {
             query = DIRECTOR_FILMS_BY_LIKES;
         } else {
             query = DIRECTOR_FILMS_BY_DT;
         }
+
         Collection<Film> filmsFound = findMany(query, directorId);
+
         if (!filmsFound.isEmpty()) {
             return filmsFound;
         } else {
@@ -227,6 +233,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     void updateFilmGenres(Collection<Genre> fullGenres, Long filmId) {
         delete(DELETE_FILM_GENRES_BY_ID, filmId);
+
         if (fullGenres != null && !fullGenres.isEmpty()) {
             Set<Genre> genres = new HashSet<>(fullGenres);
             batchInsert(INSERT_GENRE_LINK_QUERY, new BatchPreparedStatementSetter() {
@@ -247,6 +254,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     void updateFilmDirectors(Collection<Director> allDirectors, Long filmId) {
         delete(DELETE_FILM_DIRECTORS_BY_ID, filmId);
+
         if (allDirectors != null && !allDirectors.isEmpty()) {
             Set<Director> directors = new HashSet<>(allDirectors);
             batchInsert(INSERT_DIRECTORS_QUERY, new BatchPreparedStatementSetter() {
@@ -269,18 +277,12 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     public List<Film> getFilmsLikedByUserButNotByOther(Long userId1, Long userId2) {
         log.trace("Ищем фильмы, лайкнутые пользователем {}, но не лайкнутые пользователем {}", userId1, userId2);
 
-        List<Film> films = findMany(
-                GET_FILMS_LIKED_BY_USER_BUT_NOT_BY_OTHER,
-                userId1,
-                userId2
-        );
+        List<Film> films = findMany(GET_FILMS_LIKED_BY_USER_BUT_NOT_BY_OTHER, userId1, userId2);
 
         if (films.isEmpty()) {
-            log.debug("Не найдено фильмов для рекомендации от пользователя {} к пользователю {}",
-                    userId1, userId2);
+            log.debug("Не найдено фильмов для рекомендации от пользователя {} к пользователю {}", userId1, userId2);
         } else {
-            log.debug("Найдено {} фильмов для рекомендации от пользователя {} к пользователю {}",
-                    films.size(), userId1, userId2);
+            log.debug("Найдено {} фильмов для рекомендации от пользователя {} к пользователю {}", films.size(), userId1, userId2);
         }
 
         return films;
@@ -290,6 +292,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     public List<Film> getCommonFilms(long userId, long friendId) {
         log.trace("Запрос на поиск общих фильмов у пользователей {} и {}", userId, friendId);
         List<Film> films = findMany(GET_COMMON_FILMS, userId, friendId);
+
         if (films.isEmpty()) {
             log.debug("Не найдено общих фильмов у пользоваталей {} и {}", userId, friendId);
         } else {
@@ -300,8 +303,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(Integer count, Integer genreId, Integer year) {
-        log.trace("Запрос популярных фильмов с фильтрами: count={}, genreId={}, year={}",
-                count, genreId, year);
+        log.trace("Запрос популярных фильмов с фильтрами: count={}, genreId={}, year={}", count, genreId, year);
 
         int limit = (count != null && count > 0) ? count : 10;
 
