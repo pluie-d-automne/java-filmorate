@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.UserFeedEvent;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ public class FilmService {
 
     private final DirectorStorage directorStorage;
 
-    private final FeedStorage feedStorage;
+    private final FeedService feedService;
 
     private final UserStorage userStorage;
 
@@ -28,13 +27,13 @@ public class FilmService {
             @Qualifier("userDbStorage") UserStorage userStorage,
             GenreStorage genreStorage,
             DirectorStorage directorStorage,
-            FeedStorage feedStorage
+            FeedService feedService
     ) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
-        this.feedStorage = feedStorage;
+        this.feedService = feedService;
     }
 
     public Collection<Film> getAllFilms() {
@@ -62,12 +61,7 @@ public class FilmService {
         filmStorage.getFilmById(filmId);
         filmStorage.like(filmId, userId);
 
-        feedStorage.addEvent(UserFeedEvent.builder()
-                .userId(userId)
-                .eventType(UserFeedEvent.EventType.LIKE)
-                .operation(UserFeedEvent.OperationType.ADD)
-                .entityId(filmId)
-                .build());
+        feedService.addLikeEvent(userId, filmId);
     }
 
     public void unlike(Long filmId, Long userId) {
@@ -75,12 +69,7 @@ public class FilmService {
         filmStorage.getFilmById(filmId);
         filmStorage.unlike(filmId, userId);
 
-        feedStorage.addEvent(UserFeedEvent.builder()
-                .userId(userId)
-                .eventType(UserFeedEvent.EventType.LIKE)
-                .operation(UserFeedEvent.OperationType.REMOVE)
-                .entityId(filmId)
-                .build());
+        feedService.removeLikeEvent(userId, filmId);
     }
 
     public void delete(Long filmId) {

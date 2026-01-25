@@ -16,22 +16,24 @@ public class UserService {
 
     @Qualifier("userDbStorage")
     private final UserStorage userStorage;
+
     @Qualifier("filmDbStorage")
-    FilmStorage filmStorage;
-    private final FeedStorage feedStorage;
+    private final FilmStorage filmStorage;
+
+    private final FeedService feedService;
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
 
     public UserService(
             @Qualifier("userDbStorage") UserStorage userStorage,
             @Qualifier("filmDbStorage") FilmStorage filmStorage,
-            FeedStorage feedStorage,
+            FeedService feedService,
             GenreStorage genreStorage,
             DirectorStorage directorStorage
     ) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
-        this.feedStorage = feedStorage;
+        this.feedService = feedService;
         this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
     }
@@ -54,24 +56,12 @@ public class UserService {
 
     public void addFriend(Long userId, Long friendId) {
         userStorage.addFriend(userId, friendId);
-
-        feedStorage.addEvent(UserFeedEvent.builder()
-                .userId(userId)
-                .eventType(UserFeedEvent.EventType.FRIEND)
-                .operation(UserFeedEvent.OperationType.ADD)
-                .entityId(friendId)
-                .build());
+        feedService.addFriendEvent(userId, friendId);
     }
 
     public void deleteFriend(Long userId, Long friendId) {
         userStorage.deleteFriend(userId, friendId);
-
-        feedStorage.addEvent(UserFeedEvent.builder()
-                .userId(userId)
-                .eventType(UserFeedEvent.EventType.FRIEND)
-                .operation(UserFeedEvent.OperationType.REMOVE)
-                .entityId(friendId)
-                .build());
+        feedService.removeFriendEvent(userId, friendId);
     }
 
     public Collection<User> getUserFriends(Long userId) {
@@ -106,6 +96,7 @@ public class UserService {
 
     public Collection<UserFeedEvent> getUserFeed(Long userId) {
         getUserById(userId);
-        return feedStorage.getUserFeed(userId);
+
+        return feedService.getUserFeed(userId);
     }
 }

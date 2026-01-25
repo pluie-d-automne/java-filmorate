@@ -3,8 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.model.UserFeedEvent;
-import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -16,17 +14,17 @@ public class ReviewService {
 
     @Qualifier("reviewDbStorage")
     private final ReviewStorage reviewStorage;
-    private final FeedStorage feedStorage;
+    private final FeedService feedService;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
 
     public ReviewService(@Qualifier("reviewDbStorage") ReviewStorage reviewStorage,
-                         FeedStorage feedStorage,
+                         FeedService feedService,
                          @Qualifier("userDbStorage") UserStorage userStorage,
                          @Qualifier("filmDbStorage") FilmStorage filmStorage
     ) {
         this.reviewStorage = reviewStorage;
-        this.feedStorage = feedStorage;
+        this.feedService = feedService;
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
     }
@@ -36,12 +34,7 @@ public class ReviewService {
         filmStorage.getFilmById(newReview.getFilmId());
         Review review = reviewStorage.create(newReview);
 
-        feedStorage.addEvent(UserFeedEvent.builder()
-                .userId(review.getUserId())
-                .eventType(UserFeedEvent.EventType.REVIEW)
-                .operation(UserFeedEvent.OperationType.ADD)
-                .entityId(review.getReviewId())
-                .build());
+        feedService.addReviewEvent(review.getUserId(), review.getReviewId());
 
         return review;
     }
@@ -51,12 +44,7 @@ public class ReviewService {
         filmStorage.getFilmById(review.getFilmId());
         Review updatedReview = reviewStorage.update(review);
 
-        feedStorage.addEvent(UserFeedEvent.builder()
-                .userId(updatedReview.getUserId())
-                .eventType(UserFeedEvent.EventType.REVIEW)
-                .operation(UserFeedEvent.OperationType.UPDATE)
-                .entityId(updatedReview.getReviewId())
-                .build());
+        feedService.updateReviewEvent(updatedReview.getUserId(), updatedReview.getReviewId());
 
         return updatedReview;
     }
@@ -64,12 +52,7 @@ public class ReviewService {
     public Review delete(Long reviewId) {
         Review review = reviewStorage.delete(reviewId);
 
-        feedStorage.addEvent(UserFeedEvent.builder()
-                .userId(review.getUserId())
-                .eventType(UserFeedEvent.EventType.REVIEW)
-                .operation(UserFeedEvent.OperationType.REMOVE)
-                .entityId(review.getReviewId())
-                .build());
+        feedService.removeReviewEvent(review.getUserId(), review.getReviewId());
 
         return review;
     }
