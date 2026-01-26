@@ -1,19 +1,20 @@
 package ru.yandex.practicum.filmorate.storage.mappers;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.Director;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@Slf4j
 @Component
-public class MpaRowMapper implements RowMapper<Mpa> {
+public class DirectorRowMapper implements RowMapper<Director> {
     @Override
-    public Mpa mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-        Mpa mpa = new Mpa();
-        return Mpa.builder()
-                .id(resultSet.getInt("id"))
+    public Director mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+        return Director.builder()
+                .id(resultSet.getLong("id"))
                 .name(resultSet.getString("name"))
                 .build();
     }

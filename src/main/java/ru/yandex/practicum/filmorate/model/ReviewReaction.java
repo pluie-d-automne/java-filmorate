@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Mpa {
-    private Integer id;
-    private String name;
+public class ReviewReaction {
+    Long reviewId;
+    Long userId;
+    Boolean isLike;
 }

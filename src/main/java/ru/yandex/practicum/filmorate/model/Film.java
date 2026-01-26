@@ -1,14 +1,21 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.validators.CinemaDate;
+
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
 
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Film {
     @Null(groups = Marker.OnCreate.class, message = "При добавлении нового фильма id должен быть пустым.")
     @NotNull(groups = Marker.OnUpdate.class, message = "Необходимо указать id фильма, который требуется изменить.")
@@ -29,4 +36,5 @@ public class Film {
     private Collection<Genre> genres;
     private Mpa mpa;
     private int likesCnt;
+    private Collection<Director> directors;
 }
